@@ -422,15 +422,9 @@
         <div class="blog-container">
             <div class="blog-header">
                 <h1 class="reveal" data-reveal="up" style="display:flex;align-items:center;gap:10px;justify-content:center;">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <path d="M14 2v6h6"></path>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                    </svg>
                     博客文章
                 </h1>
-                <p class="reveal" data-reveal="up" style="--reveal-delay:.05s">记录技术、生活与思考</p>
+                <p class="reveal" data-reveal="up" style="--reveal-delay:.05s">所见，所闻，所感</p>
             </div>
 
             <div id="loadingState" class="loading-state">
@@ -583,20 +577,8 @@
                         <h2 class="post-title">${escapeHtml(post.title)}</h2>
                         ${post.summary ? `<p class="post-summary">${escapeHtml(post.summary)}</p>` : ''}
                         <div class="post-meta">
-                            <span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                ${date}
-                            </span>
-                            <span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                                ${post.view_count}
-                            </span>
+                            <span>${date}</span>
+                            <span>${post.view_count}</span>
                         </div>
                     </div>
                 </div>
