@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - LiuEggy</title>
+    <link rel="stylesheet" href="/assets/style.css?v=3">
+    <link rel="stylesheet" href="/admin/admin.css?v=2">
+</head>
+<body>
+    <div id="loginView">
+        <div class="login-card">
+            <h1>管理后台</h1>
+            <p class="login-subtitle">LiuEggy 统一管理</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input class="input" type="text" id="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input class="input" type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn primary block">登录</button>
+                <div class="error" id="loginErr"></div>
+            </form>
+        </div>
+    </div>
+    <div id="adminView" class="layout">
+        <aside class="sidebar">
+            <div class="brand">管理后台</div>
+            <nav class="nav">
+                <button class="nav-item active" data-view="overview">概览</button>
+                <button class="nav-item" data-view="blog">博客管理</button>
+                <button class="nav-item" data-view="contact">留言管理</button>
+                <button class="nav-item" data-view="comments">评论管理</button>
+                <button class="nav-item" data-view="settings">设置</button>
+                <button class="nav-item" data-view="modules">模块</button>
+            </nav>
+            <div class="sidebar-bottom">
+                <a class="link" href="/">返回主页</a>
+                <button class="link danger" id="logoutBtn">退出登录</button>
+            </div>
+        </aside>
+        <main class="content">
+            <div class="content-inner">
+                <section id="view-overview" class="view active">
+                    <div class="panel">
+                        <h2 class="section-title">概览</h2>
+                        <div class="grid" id="contactStats">
+                            <div class="card"><h3>总留言数</h3><div class="value">0</div></div>
+                            <div class="card"><h3>待审核</h3><div class="value">0</div></div>
+                            <div class="card"><h3>今日留言</h3><div class="value">0</div></div>
+                            <div class="card"><h3>总点赞数</h3><div class="value">0</div></div>
+                        </div>
+                    </div>
+                </section>
+                <section id="view-blog" class="view">
+                    <div class="panel">
+                        <h2 class="section-title">博客管理</h2>
+                        <iframe src="/blog/admin.html" id="blogFrame" class="frame"></iframe>
+                    </div>
+                </section>
+                <section id="view-contact" class="view">
+                    <div class="panel">
+                        <h2 class="section-title">留言管理</h2>
+                        <div style="display:flex;gap:8px;margin-bottom:12px;">
+                            <button class="btn active" data-filter="all" data-type="contact">全部</button>
+                            <button class="btn" data-filter="active" data-type="contact">已发布</button>
+                            <button class="btn" data-filter="hidden" data-type="contact">已隐藏</button>
+                        </div>
+                        <div id="contactList" class="list"></div>
+                    </div>
+                </section>
+                <section id="view-comments" class="view">
+                    <div class="panel">
+                        <h2 class="section-title">博客评论管理</h2>
+                        <div class="grid" id="blogStats">
+                            <div class="card"><h3>总评论数</h3><div class="value">0</div></div>
+                            <div class="card"><h3>待审核</h3><div class="value">0</div></div>
+                            <div class="card"><h3>今日评论</h3><div class="value">0</div></div>
+                            <div class="card"><h3>总点赞数</h3><div class="value">0</div></div>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-bottom:12px;">
+                            <button class="btn active" data-filter="all" data-type="blog">全部</button>
+                            <button class="btn" data-filter="active" data-type="blog">已发布</button>
+                            <button class="btn" data-filter="hidden" data-type="blog">已隐藏</button>
+                        </div>
+                        <div id="commentsList" class="list"></div>
+                    </div>
+                </section>
+                <section id="view-settings" class="view">
+                    <div class="panel">
+                        <h2 class="section-title">设置</h2>
+                        <p style="color:var(--text-secondary);font-size:14px;">预留系统设置入口。</p>
+                    </div>
+                </section>
+                <section id="view-modules" class="view">
+                    <div class="panel">
+                        <h2 class="section-title">模块</h2>
+                        <p style="color:var(--text-secondary);font-size:14px;">按需新增模块并通过 #hash 切换。</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="/admin/admin.js?v=1"></script>
+</body>
+</html>

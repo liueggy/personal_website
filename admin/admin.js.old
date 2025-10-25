@@ -1,0 +1,172 @@
+'use strict';
+(function(){
+  const API = '/admin/api.php';
+  const loginView = document.getElementById('loginView');
+  const adminView = document.getElementById('adminView');
+
+  // theme follow site
+  try { const saved = localStorage.getItem('theme'); if (!saved || saved === 'light') document.documentElement.classList.add('light'); } catch(e){}
+
+  function showLogin(){ loginView.style.display='flex'; adminView.style.display='none'; }
+  function showAdmin(){ loginView.style.display='none'; adminView.style.display='block'; }
+
+  function checkAuth(){ const token = localStorage.getItem('admin_token'); if (token) { showAdmin(); initAfterAuth(); } else { showLogin(); } }
+
+  function initAfterAuth(){
+    // default view
+    const hash = location.hash.replace('#','') || 'overview';
+    switchView(hash);
+    // notify iframe token
+    setTimeout(()=>{ const iframe = document.getElementById('blogFrame'); if (iframe && iframe.contentWindow) { const token = localStorage.getItem('admin_token'); iframe.contentWindow.postMessage({type:'auth', token}, '*'); } }, 300);
+    // load data for overview/contact by default
+    loadContactData();
+  }
+
+  // Sidebar navigation
+  document.querySelectorAll('.nav-item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const view = btn.dataset.view;
+      location.hash = view;
+      switchView(view);
+    });
+  });
+
+  window.addEventListener('hashchange', ()=>{
+    const view = location.hash.replace('#','') || 'overview';
+    switchView(view);
+  });
+
+  function switchView(name){
+    document.querySelectorAll('.nav-item').forEach(n=> n.classList.toggle('active', n.dataset.view===name));
+    document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.id === 'view-'+name));
+    if (name==='contact') loadContactData();
+    if (name==='comments') loadBlogCommentsData();
+  }
+
+  // Login form
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const err = document.getElementById('loginErr');
+      try {
+        const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'login', username, password}) });
+        const data = await res.json();
+        if (data.ok) { localStorage.setItem('admin_token', data.token); showAdmin(); initAfterAuth(); }
+        else { err.textContent = data.message || '登录失败'; }
+      } catch(e){ err.textContent = '网络错误'; }
+    });
+  }
+
+  // Logout
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.addEventListener('click', ()=>{ localStorage.removeItem('admin_token'); location.reload(); });
+
+  // Stats + lists
+  let currentContactFilter = 'all';
+  let currentBlogFilter = 'all';
+
+  async function loadStats(type, containerId){
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API}?action=stats&type=${type}`, { headers: { 'Authorization': `Bearer ${token}` }});
+      const data = await res.json();
+      if (data.ok){
+        const cont = document.getElementById(containerId);
+        const values = cont.querySelectorAll('.value');
+        values[0].textContent = data.stats.total || 0;
+        values[1].textContent = data.stats.pending || 0;
+        values[2].textContent = data.stats.today || 0;
+        values[3].textContent = data.stats.likes || 0;
+      }
+    } catch(e){ console.error('stats', e); }
+  }
+
+  async function loadComments(type, filter, containerId){
+    const cont = document.getElementById(containerId);
+    cont.innerHTML = '<div class="panel">加载中...</div>';
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API}?action=list&type=${type}&filter=${filter}`, { headers: { 'Authorization': `Bearer ${token}` }});
+      const data = await res.json();
+      if (!data.ok){ if (data.message==='Unauthorized'){ localStorage.removeItem('admin_token'); location.reload(); return; } throw new Error(data.message); }
+      if (!data.comments.length){ cont.innerHTML = '<div class="panel">暂无内容</div>'; return; }
+      cont.innerHTML = data.comments.map(c=> renderItem(c, type)).join('');
+    } catch(e){ cont.innerHTML = `<div class="panel">加载失败: ${e.message}</div>`; }
+  }
+
+  function renderItem(comment, type){
+    const date = new Date(comment.created_at).toLocaleString();
+    const statusActive = Number(comment.status) === 1;
+    const statusText = statusActive ? '已发布' : '已隐藏';
+    const postTag = type==='blog' && comment.post_title ? `<span style="margin-left:6px;color:var(--text-secondary);font-size:12px;">${escapeHtml(comment.post_title)}</span>` : '';
+    return `
+      <div class="item" data-id="${comment.id}" data-type="${type}">
+        <div class="item-head">
+          <div>
+            <span class="item-title">${escapeHtml(comment.name)}</span>
+            ${comment.contact ? ` · ${escapeHtml(comment.contact)}` : ''}
+            ${postTag}
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);">${date} · <span>${statusText}</span></div>
+        </div>
+        <div class="item-content">${escapeHtml(comment.content)}</div>
+        <div class="item-actions">
+          ${statusActive ? '<button class="btn warning" data-action="toggle" data-status="0">隐藏</button>' : '<button class="btn success" data-action="toggle" data-status="1">发布</button>'}
+          <button class="btn danger" data-action="delete">删除</button>
+        </div>
+      </div>`;
+  }
+
+  async function toggleStatus(id, status, type){
+    if(!confirm(`确定${status==1?'发布':'隐藏'}这条${type==='blog'?'评论':'留言'}吗？`)) return;
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({action:'toggle', id, status, type})});
+      const data = await res.json();
+      if (data.ok){ if (type==='contact') loadContactData(); else loadBlogCommentsData(); }
+      else alert(data.message || '操作失败');
+    } catch(e){ alert('操作失败: '+e.message); }
+  }
+
+  async function deleteComment(id, type){
+    if(!confirm(`确定要永久删除这条${type==='blog'?'评论':'留言'}吗？此操作不可恢复`)) return;
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({action:'delete', id, type})});
+      const data = await res.json();
+      if (data.ok){ if (type==='contact') loadContactData(); else loadBlogCommentsData(); }
+      else alert(data.message || '删除失败');
+    } catch(e){ alert('删除失败: '+e.message); }
+  }
+
+  // Filters
+  document.addEventListener('click', (e)=>{
+    const tab = e.target.closest('[data-filter][data-type]');
+    if (tab){
+      const type = tab.dataset.type; const filter = tab.dataset.filter;
+      document.querySelectorAll(`[data-filter][data-type="${type}"]`).forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      if (type==='contact'){ currentContactFilter = filter; loadComments('contact', filter, 'contactList'); }
+      else { currentBlogFilter = filter; loadComments('blog', filter, 'commentsList'); }
+    }
+
+    const btn = e.target.closest('button[data-action]');
+    if (btn){
+      const item = btn.closest('.item');
+      const id = item.dataset.id; const type = item.dataset.type; const action = btn.dataset.action;
+      if (action==='toggle'){ const status = parseInt(btn.dataset.status,10); toggleStatus(id, status, type); }
+      if (action==='delete'){ deleteComment(id, type); }
+    }
+  });
+
+  function loadContactData(){ Promise.all([ loadStats('contact','contactStats'), loadComments('contact', currentContactFilter, 'contactList') ]); }
+  function loadBlogCommentsData(){ Promise.all([ loadStats('blog','blogStats'), loadComments('blog', currentBlogFilter, 'commentsList') ]); }
+
+  function escapeHtml(text){ const div=document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+  // init
+  checkAuth();
+})();
