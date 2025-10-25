@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">文章详情 - LiuEggy</title>
+    <meta name="description" id="pageDescription" content="">
+    <script>(function(){try{var t=localStorage.getItem('theme');if(!t||t==='light')document.documentElement.classList.add('light');else document.documentElement.classList.remove('light');}catch(e){document.documentElement.classList.add('light');}})();</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css?v=15">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header class="site-header">
+        <div class="header-container container" style="max-width:1200px;margin:0 auto;padding:0 24px;">
+            <a href="/" class="brand" style="text-decoration:none;cursor:pointer;">
+                <div class="logo-wrapper">
+                    <svg class="logo" width="32" height="32" viewBox="0 0 100 100" fill="none">
+                        <circle cx="50" cy="50" r="40" fill="currentColor" opacity="0.2"/>
+                        <ellipse cx="50" cy="55" rx="30" ry="35" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>LiuEggy</h1>
+                    <span class="tagline">追求卓越</span>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <a href="/" class="nav-link">首页</a>
+                <a href="/about.html" class="nav-link">关于</a>
+                <a href="/blog" class="nav-link active">博客</a>
+                <a href="/guestbook.html" class="nav-link">留言</a>
+                <button id="theme-toggle" class="icon-btn" aria-label="切换主题">
+                    <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="theme-icon sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="article-wrapper" style="min-height:100vh;background:var(--bg-primary);padding-top:80px;">
+        <div class="article-container" style="max-width:800px;margin:0 auto;padding:40px 20px 40px;">
+            <!-- 加载与错误状态 -->
+            <div id="loadingState" style="text-align:center;color:var(--text-secondary);padding:60px 0;">正在加载文章...</div>
+            <div id="errorState" style="display:none;text-align:center;color:#e74c3c;padding:60px 0;">文章加载失败或不存在</div>
+
+            <!-- 文章内容 -->
+            <article id="articleContent" style="display:none;">
+                <h1 id="articleTitle" style="font-size:32px;line-height:1.3;margin:0 0 12px;color:var(--text-primary);"></h1>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
+                    <span id="articleAuthor"></span>
+                    <span id="articleDate"></span>
+                    <span>阅读 <span id="articleViews">0</span></span>
+                </div>
+                <div id="articleCover" style="margin:16px 0 8px;"></div>
+                <div id="articleBody" style="color:var(--text-primary);line-height:1.8;"></div>
+            </article>
+        </div>
+    </div>
+
+    <!-- 评论区 - 简洁风格 -->
+    <section class="comments-section" style="max-width:800px;margin:40px auto;padding:0 20px;">
+        <div style="margin-bottom:20px;">
+            <h2 style="margin:0 0 4px 0;font-size:18px;color:var(--text-primary);font-weight:600;">
+                评论 <span id="commentCount" style="color:var(--text-secondary);font-weight:400;font-size:16px;">(0)</span>
+            </h2>
+        </div>
+        
+        <!-- 发表评论框 -->
+        <div class="comment-input-box" style="margin-bottom:20px;">
+            <textarea id="commentContent" placeholder="说点什么..." maxlength="500" style="width:100%;min-height:100px;padding:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);resize:vertical;font-size:14px;line-height:1.6;box-sizing:border-box;margin-bottom:10px;" onfocus="this.style.borderColor='#666'" onblur="this.style.borderColor='var(--border)'"></textarea>
+            <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+                <input id="commentName" type="text" placeholder="昵称（选填）" maxlength="20" style="flex:1;min-width:120px;max-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);font-size:14px;box-sizing:border-box;" onfocus="this.style.borderColor='#666'" onblur="this.style.borderColor='var(--border)'">
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <span id="commentStatus" style="font-size:13px;color:var(--text-secondary);"></span>
+                    <button id="submitComment" style="padding:8px 24px;background:#000;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:14px;white-space:nowrap;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='#000'">发表</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 评论列表 -->
+        <div id="commentsList" style="padding:0 8px;"></div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>LiuEggy</h4>
+                    <p style="color:var(--text-secondary);font-size:14px;line-height:1.6;margin-bottom:12px;">
+                        成都理工大学机械工程系学生<br>
+                        嵌入式开发 | 机器视觉 | 三维设计
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>联系我</h4>
+                    <div class="social-links" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+                        <a class="social-btn" href="https://github.com/liueggy" target="_blank" rel="noopener" title="GitHub">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                        </a>
+                        <a class="social-btn" href="mailto:1963287731qq@gmail.com" title="邮箱">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        </a>
+                        <button class="social-btn" data-type="wechat" title="微信" aria-label="查看微信">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1 .131-.556c1.52-1.18 2.194-2.853 2.194-4.467 0-3.56-3.266-6.274-7.707-6.274zm-2.946 3.42c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982zm5.814 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/></svg>
+                        </button>
+                        <button class="social-btn" data-type="qq" title="QQ" aria-label="查看QQ">
+                            <svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M824.8 613.2c-16-51.4-34.4-94.6-62.7-165.3C766.5 262.2 689.3 112 511.5 112 331.7 112 256.2 265.2 261 447.9c-28.4 70.8-46.7 113.7-62.7 165.3-34 109.5-23 154.8-14.6 155.8 18 2.2 70.1-82.4 70.1-82.4 0 49 25.2 112.9 79.8 159-26.4 8.1-85.7 29.9-71.6 53.8 11.4 19.3 196.2 12.3 249.5 6.3 53.3 6 238.1 13 249.5-6.3 14.1-23.8-45.3-45.7-71.6-53.8 54.6-46.2 79.8-110.1 79.8-159 0 0 52.1 84.6 70.1 82.4 8.5-1.1 19.5-46.4-14.5-155.8z"/></svg>
+                        </button>
+                        <a class="social-btn" href="https://space.bilibili.com/444993481" target="_blank" rel="noopener" title="Bilibili">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">
+                    © <span id="year"></span> LiuEggy · 用
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;color:#e74c3c">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    呈现
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 联系方式弹窗 -->
+    <div class="contact-modal" id="contact-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" aria-label="关闭">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <style>
+        .article-cover-img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        /* 评论区容器 */
+        #commentsList {
+            min-height: 100px;
+        }
+        
+        /* 覆盖全局：去掉卡片背景/边框/圆角（避免“太多框”） */
+        .comments-section .comment-item {
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+        }
+
+        /* 主评论项 */
+        .comment-item {
+            padding: 20px 0;
+            transition: background-color 0.2s ease;
+        }
+        
+        .comment-item:first-child {
+            padding-top: 16px;
+        }
+        
+        .comment-item:last-child {
+            padding-bottom: 16px;
+        }
+        
+        /* 仅顶层评论使用分隔线，避免子评论过多边框 */
+        #commentsList > .comment-item:not(:last-child) {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        /* 子评论项 - 更轻的层级感（覆盖全局样式） */
+        .comments-section .reply-item {
+            border-bottom: none !important;
+            padding: 8px 0 0 0 !important;
+            margin: 6px 0 0 28px !important; /* 缩小缩进 */
+            background: transparent !important; /* 去除背景块 */
+            border-radius: 0 !important;
+        }
+        
+        .comments-section .reply-item:last-child {
+            margin-bottom: 6px;
+        }
+
+        /* 覆盖全局：去掉左侧竖线和内边距，缩进改由 .reply-item 控制 */
+        .comments-section .reply-list {
+            border-left: 0 !important;
+            padding-left: 0 !important;
+        }
+        
+        /* 用户名加粗 */
+        .comment-username {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* 时间戳样式 */
+        .comment-timestamp {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        /* 交互按钮 */
+        .comment-action-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        /* 移除鼠标悬浮效果 */
+        .comment-action-btn:hover { color: inherit; transform: none; background: transparent; }
+        /* 防止全局 .reply-btn:hover/.like:hover 影响本页 */
+        .comments-section .reply-btn:hover,
+        .comments-section .react-btn:hover { color: inherit; background: transparent; border-color: inherit; }
+        
+        .comment-action-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* 点赞按钮激活状态 */
+        .comment-action-btn.liked {
+            color: #000;
+            font-weight: 600;
+        }
+        
+        .comment-action-btn.liked svg {
+            fill: currentColor;
+            animation: likeAnimation 0.3s ease;
+        }
+        
+        @keyframes likeAnimation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        
+        /* 头像样式 */
+        .comment-avatar {
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        /* 头像无悬浮效果 */
+        .comment-avatar:hover { transform: none; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+        
+        /* 内联回复框动画 */
+        .inline-reply-form {
+            animation: slideDown 0.3s ease;
+            margin-top: 12px;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 640px) {
+            .comments-section {
+                padding: 0 16px;
+            }
+            
+            #commentContent {
+                min-height: 80px;
+                font-size: 14px;
+            }
+            
+            #commentName {
+                max-width: 100% !important;
+            }
+            
+            .comments-section .reply-item {
+                margin-left: 20px !important;
+                padding: 6px 0 0 0 !important;
+            }
+            
+            .comment-item {
+                padding: 16px 0;
+            }
+            
+            .comment-avatar {
+                width: 36px !important;
+                height: 36px !important;
+            }
+        }
+    </style>
+    
+    <script src="/assets/reveal.js?v=1"></script>
+    <script src="/assets/app.js?v=3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="/blog/comment.js?v=10"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // 主题切换 - 使用 html.light，默认亮色
+        (function initTheme(){
+            const themeToggle = document.getElementById('theme-toggle');
+            const html = document.documentElement;
+            const saved = localStorage.getItem('theme');
+            if (!saved || saved === 'light') html.classList.add('light');
+            else html.classList.remove('light');
+
+            const updateIcon = () => {
+                if (!themeToggle) return;
+                const isLight = html.classList.contains('light');
+                const moon = themeToggle.querySelector('.moon-icon');
+                const sun = themeToggle.querySelector('.sun-icon');
+                if (moon && sun) { sun.style.display = isLight ? 'block' : 'none'; moon.style.display = isLight ? 'none' : 'block'; }
+            };
+            updateIcon();
+            // 点击事件由全局 /assets/app.js 统一处理，避免重复绑定
+        })();
+
+        async function loadArticle() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const slug = urlParams.get('slug') || window.location.pathname.split('/').pop();
+
+            if (!slug || slug === 'article.html') {
+                showError();
+                return;
+            }
+
+            try {
+                const res = await fetch(`/blog/api/?action=get&slug=${encodeURIComponent(slug)}`);
+                const data = await res.json();
+
+                if (data.code === 200 && data.data && data.data.status === 'published') {
+                    const article = data.data;
+                    document.getElementById('pageTitle').textContent = `${article.title} - LiuEggy`;
+                    document.getElementById('pageDescription').content = article.summary || '';
+                    document.getElementById('articleTitle').textContent = article.title;
+                    document.getElementById('articleAuthor').textContent = article.author;
+                    document.getElementById('articleDate').textContent = new Date(article.created_at).toLocaleDateString('zh-CN');
+                    document.getElementById('articleViews').textContent = article.view_count;
+
+                    // 渲染头图（封面）
+                    const coverWrapper = document.getElementById('articleCover');
+                    if (coverWrapper) {
+                        coverWrapper.style.display = 'none';
+                        coverWrapper.textContent = '';
+                        const rawCover = (article.cover_image || '').trim();
+                        const isExternal = /^https?:\/\//i.test(rawCover) && !rawCover.startsWith(location.origin);
+                        const coverUrl = rawCover ? (isExternal ? `/image_proxy.php?url=${encodeURIComponent(rawCover)}` : rawCover) : '';
+                        if (coverUrl) {
+                            const img = document.createElement('img');
+                            img.className = 'article-cover-img';
+                            img.alt = article.title || '';
+                            img.loading = 'lazy';
+                            try { img.referrerPolicy = 'no-referrer'; } catch (e) {}
+                            img.onerror = () => { img.style.display = 'none'; };
+                            img.src = coverUrl;
+                            coverWrapper.appendChild(img);
+                            coverWrapper.style.display = 'block';
+                        }
+                    }
+
+                    // Markdown 渲染：若内容看起来不是HTML，则按Markdown转换
+                    const rawContent = article.content || '';
+                    const isProbablyHTML = /<\/?[a-z][\s\S]*>/i.test(rawContent);
+
+                    // 配置 marked 与 highlight 集成
+                    marked.setOptions({
+                        gfm: true,
+                        breaks: true,
+                        headerIds: true,
+                        mangle: false,
+                        highlight: function(code, lang) {
+                            try { return hljs.highlight(code, { language: lang }).value; } catch (e) {}
+                            try { return hljs.highlightAuto(code).value; } catch (e) {}
+                            return code;
+                        }
+                    });
+
+                    const rendered = isProbablyHTML ? rawContent : marked.parse(rawContent);
+                    const safeHtml = DOMPurify.sanitize(rendered);
+                    document.getElementById('articleBody').innerHTML = safeHtml;
+
+                    document.querySelectorAll('#articleBody pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+
+                    // 优化正文内图片的加载与防盗链
+                    document.querySelectorAll('#articleBody img').forEach(img => {
+                        img.setAttribute('loading', 'lazy');
+                        try { img.referrerPolicy = 'no-referrer'; } catch (e) {}
+                        const src = (img.getAttribute('src') || '').trim();
+                        if (/^https?:\/\//i.test(src) && !src.startsWith(location.origin)) {
+                            img.setAttribute('src', `/image_proxy.php?url=${encodeURIComponent(src)}`);
+                        }
+                        img.addEventListener('error', () => { img.style.display = 'none'; });
+                    });
+
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('articleContent').style.display = 'block';
+                    
+                    // 触发reveal动画
+                    setTimeout(() => {
+                        if (window.initReveal) window.initReveal();
+                    }, 50);
+                } else {
+                    showError();
+                }
+            } catch (error) {
+                console.error('加载文章失败:', error);
+                showError();
+            }
+        }
+
+        function showError() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+
+        loadArticle();
+        
+    </script>
+</body>
+</html>

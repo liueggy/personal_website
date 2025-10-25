@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客管理后台 - LiuEggy</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%234a9eff'/><ellipse cx='50' cy='55' rx='30' ry='35' fill='white'/></svg>">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        /* 登录页面 */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: normal;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #333;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #000;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 管理后台 */
+        .admin-container {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .admin-header h1 {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: normal;
+        }
+        
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .posts-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn-primary {
+            padding: 10px 16px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary:hover {
+            background: #000;
+        }
+        
+        .btn-secondary {
+            padding: 8px 14px;
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            border-color: #333;
+        }
+        
+        .btn-danger {
+            padding: 8px 14px;
+            background: #e74c3c;
+            color: white;
+            border: 1px solid #e74c3c;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .posts-list {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background: #fafafa;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .status-published {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+        
+        /* 编辑器模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 20px auto;
+            padding: 30px;
+            max-width: 1400px;
+            border-radius: 8px;
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 0;
+                padding: 20px;
+                max-width: 100%;
+                min-height: 100vh;
+                border-radius: 0;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close {
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .editor-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .editor-toolbar label {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            display: inline-block;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background: #333;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .editor-container-wrapper {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            min-height: 500px;
+        }
+
+        .editor-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-panel {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            border-left: 2px solid #e0e0e0;
+            padding-left: 20px;
+        }
+
+        .preview-panel.active {
+            display: flex;
+        }
+
+        .editor-container-wrapper.split-view .editor-panel,
+        .editor-container-wrapper.split-view .preview-panel {
+            flex: 1;
+        }
+
+        .preview-content {
+            flex: 1;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow-y: auto;
+            line-height: 1.8;
+        }
+
+        .preview-content h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .preview-content h2 {
+            font-size: 24px;
+            margin: 30px 0 15px;
+            color: #444;
+        }
+
+        .preview-content h3 {
+            font-size: 20px;
+            margin: 25px 0 12px;
+            color: #555;
+        }
+
+        .preview-content p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .preview-content code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .preview-content pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .preview-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .preview-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .preview-content blockquote {
+            border-left: 4px solid #333;
+            padding-left: 20px;
+            margin: 20px 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        .preview-content ul, .preview-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .preview-content li {
+            margin: 8px 0;
+            color: #666;
+        }
+        
+        #editor {
+            height: 100%;
+            min-height: 500px;
+            background: white;
+            flex: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .editor-container-wrapper {
+                flex-direction: column;
+            }
+
+            .preview-panel {
+                border-left: none;
+                border-top: 2px solid #e0e0e0;
+                padding-left: 0;
+                padding-top: 20px;
+            }
+
+            .editor-container-wrapper.split-view .editor-panel,
+            .editor-container-wrapper.split-view .preview-panel {
+                flex: none;
+            }
+
+            #editor {
+                min-height: 400px;
+            }
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .page-btn {
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .page-btn.active {
+            background: #333;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 10px;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                gap: 12px;
+                padding: 15px;
+            }
+
+            .admin-header h1 {
+                font-size: 20px;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .admin-header h1 svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            .admin-header > div {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                gap: 8px;
+            }
+
+            .admin-header button,
+            .admin-header .btn-secondary,
+            .admin-header .btn-danger {
+                width: 100%;
+                justify-content: center;
+                margin: 0;
+                padding: 12px 16px;
+                font-size: 14px;
+                white-space: nowrap;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px 12px;
+            }
+
+            .stat-card .label {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            .stat-card .number {
+                font-size: 24px;
+            }
+
+            .posts-section {
+                padding: 15px 10px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .section-header h2 {
+                font-size: 18px;
+                width: 100%;
+            }
+
+            .section-header > div {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .section-header .btn-primary,
+            .section-header .btn-secondary {
+                width: 100%;
+                margin: 0;
+                padding: 12px 16px;
+                font-size: 14px;
+                justify-content: center;
+            }
+
+            .posts-list {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -10px;
+                padding: 0 10px;
+            }
+            
+            table {
+                font-size: 11px;
+                min-width: 600px;
+            }
+            
+            th, td {
+                padding: 10px 6px;
+                white-space: nowrap;
+            }
+
+            th {
+                font-size: 11px;
+                position: sticky;
+                top: 0;
+                background: #f8f9fa;
+                z-index: 10;
+            }
+
+            td {
+                vertical-align: middle;
+            }
+
+            .status-badge {
+                padding: 3px 8px;
+                font-size: 10px;
+                display: inline-block;
+            }
+
+            td button {
+                padding: 6px 10px;
+                font-size: 11px;
+                margin: 2px;
+                display: inline-block;
+            }
+
+            .modal-header h2 {
+                font-size: 20px;
+            }
+
+            .editor-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px;
+            }
+
+            .form-group input,
+            .form-group textarea {
+                font-size: 16px; /* 防止iOS自动缩放 */
+            }
+
+            .pagination {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .page-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1>� 博客管理</h1>
+            <p class="login-subtitle">LiuEggy 博客管理系统</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn">登录</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 管理后台 -->
+    <div class="admin-container" id="adminContainer">
+        <div class="admin-header">
+            <h1>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                博客管理
+            </h1>
+            <!-- 仅在非iframe模式下显示导航按钮 -->
+            <div id="headerActions" style="display:flex;gap:10px;">
+                <a href="/" class="btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    返回主页
+                </a>
+                <button class="btn-danger" onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    退出登录
+                </button>
+            </div>
+        </div>
+
+        <div class="stats" id="statsContainer">
+            <!-- 统计卡片将通过JS填充 -->
+        </div>
+
+        <div class="posts-section">
+            <div class="section-header">
+                <h2>文章列表</h2>
+                <div style="display:flex;gap:10px;">
+                    <button class="btn-primary" onclick="openEditor()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"></path>
+                        </svg>
+                        新建文章
+                    </button>
+                    <button style="padding:10px 16px;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;" onclick="migrateCovers()" title="将外链封面缓存到本地">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        本地化封面
+                    </button>
+                </div>
+            </div>
+            <div class="posts-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>状态</th>
+                            <th>作者</th>
+                            <th>浏览量</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="postsTableBody">
+                        <!-- 文章列表将通过JS填充 -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination">
+                <!-- 分页将通过JS填充 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑器模态框 -->
+    <div class="modal" id="editorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="editorTitle">新建文章</h2>
+                <span class="close" onclick="closeEditor()">&times;</span>
+            </div>
+            <form class="editor-form" id="editorForm">
+                <input type="hidden" id="postId">
+                <div class="form-group">
+                    <label>标题 *</label>
+                    <input type="text" id="postTitle" required placeholder="输入文章标题">
+                    <small style="color:#666;font-size:12px;margin-top:5px;display:block;">
+                        提示：按 Ctrl+S (或 Cmd+S) 快速保存
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label>URL别名 (可选，留空自动生成)</label>
+                    <input type="text" id="postSlug" placeholder="my-first-post">
+                </div>
+                <div class="form-group">
+                    <label>封面图片URL (可选)</label>
+                    <input type="text" id="postCover" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>摘要 (可选，留空自动提取)</label>
+                    <textarea id="postSummary" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <div class="editor-toolbar">
+                        <label>内容编辑器</label>
+                        <div class="preview-toggle">
+                            <span style="font-size:13px;color:#666;">实时预览</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="previewToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="editor-container-wrapper" id="editorWrapper">
+                        <div class="editor-panel">
+                            <div id="editor"></div>
+                        </div>
+                        <div class="preview-panel" id="previewPanel">
+                            <div class="preview-content" id="previewContent">
+                                <p style="color:#999;text-align:center;padding:40px;">开始编写内容，预览将实时显示在这里...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="postStatus" checked> 发布 (取消勾选则保存为草稿)
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeEditor()">取消</button>
+                    <button type="submit" class="btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <!-- Markdown解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"></script>
+    <script>
+        let quill;
+        let currentPage = 1;
+        let currentPostId = null;
+
+        // 配置 marked
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false
+        });
+
+        // Markdown 转 Delta (Quill格式)
+        function markdownToDelta(markdown) {
+            const html = marked.parse(markdown);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            return quill.clipboard.convert(tempDiv);
+        }
+
+        // 初始化编辑器
+        function initEditor() {
+            quill = new Quill('#editor', {
+                theme: 'snow',
+                placeholder: '开始写作...支持粘贴 Markdown 自动转换',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'script': 'sub'}, { 'script': 'super' }],
+                        [{ 'indent': '-1'}, { 'indent': '+1' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'align': [] }],
+                        ['link', 'image', 'video'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // 监听粘贴事件 - 自动转换 Markdown
+            quill.root.addEventListener('paste', function(e) {
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const pastedText = clipboardData.getData('text/plain');
+                
+                // 检测是否为 Markdown 格式
+                if (isMarkdown(pastedText)) {
+                    e.preventDefault();
+                    
+                    const confirmed = confirm('检测到 Markdown 格式，是否自动转换为富文本？\n\n点击"确定"转换，点击"取消"保持原样粘贴。');
+                    
+                    if (confirmed) {
+                        const delta = markdownToDelta(pastedText);
+                        const range = quill.getSelection(true);
+                        quill.updateContents(delta, 'user');
+                        quill.setSelection(range.index + delta.length());
+                    } else {
+                        // 保持原样粘贴
+                        const range = quill.getSelection(true);
+                        quill.insertText(range.index, pastedText, 'user');
+                    }
+                }
+            });
+
+            // 监听内容变化，实时预览
+            quill.on('text-change', function() {
+                updatePreview();
+            });
+        }
+
+        // 检测是否为 Markdown 格式
+        function isMarkdown(text) {
+            const mdPatterns = [
+                /^#{1,6}\s/m,           // 标题
+                /\*\*.*\*\*/,           // 粗体
+                /_.*_/,                 // 斜体
+                /\[.*\]\(.*\)/,         // 链接
+                /!\[.*\]\(.*\)/,        // 图片
+                /^[-*+]\s/m,            // 无序列表
+                /^\d+\.\s/m,            // 有序列表
+                /^>\s/m,                // 引用
+                /```[\s\S]*```/,        // 代码块
+                /`.*`/                  // 行内代码
+            ];
+            
+            return mdPatterns.some(pattern => pattern.test(text));
+        }
+
+        // 导入整个 Markdown 文件
+        function importMarkdown() {
+            const md = prompt('粘贴完整的 Markdown 内容：\n\n(支持标题、列表、代码块、图片、链接等)');
+            
+            if (md && md.trim()) {
+                const delta = markdownToDelta(md);
+                quill.setContents(delta);
+                alert('Markdown 导入成功！');
+            }
+        }
+
+        // 清空编辑器
+        function clearEditor() {
+            if (confirm('确定要清空编辑器内容吗？')) {
+                quill.setText('');
+            }
+        }
+
+        // 更新预览
+        function updatePreview() {
+            const previewToggle = document.getElementById('previewToggle');
+            if (!previewToggle.checked) return;
+
+            const content = quill.root.innerHTML;
+            const previewContent = document.getElementById('previewContent');
+            
+            if (content.trim() === '<p><br></p>' || content.trim() === '') {
+                previewContent.innerHTML = '<p style="color:#999;text-align:center;padding:40px;">开始编写内容，预览将实时显示在这里...</p>';
+            } else {
+                // 添加标题到预览
+                const title = document.getElementById('postTitle').value;
+                let previewHTML = '';
+                if (title) {
+                    previewHTML = `<h1 style="border-bottom:2px solid #e0e0e0;padding-bottom:15px;margin-bottom:25px;">${escapeHtml(title)}</h1>`;
+                }
+                previewHTML += content;
+                previewContent.innerHTML = previewHTML;
+            }
+            
+            updateWordCount();
+        }
+
+        // HTML转义（用于预览标题）
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 预览开关
+        document.addEventListener('DOMContentLoaded', function() {
+            const previewToggle = document.getElementById('previewToggle');
+            const editorWrapper = document.getElementById('editorWrapper');
+            const previewPanel = document.getElementById('previewPanel');
+            const postTitle = document.getElementById('postTitle');
+
+            if (previewToggle) {
+                previewToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        editorWrapper.classList.add('split-view');
+                        previewPanel.classList.add('active');
+                        updatePreview();
+                    } else {
+                        editorWrapper.classList.remove('split-view');
+                        previewPanel.classList.remove('active');
+                    }
+                });
+            }
+
+            // 标题输入也触发预览更新
+            if (postTitle) {
+                postTitle.addEventListener('input', function() {
+                    if (previewToggle.checked) {
+                        updatePreview();
+                    }
+                });
+            }
+        });        // 检查登录状态
+        async function checkAuth() {
+            try {
+                const res = await fetch('/blog/api/?action=check');
+                const data = await res.json();
+                
+                if (data.code === 200 && data.data.logged_in) {
+                    showAdmin();
+                    loadStats();
+                    loadPosts();
+                } else {
+                    showLogin();
+                }
+            } catch (error) {
+                showLogin();
+            }
+        }
+
+        // 显示登录页面
+        function showLogin() {
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('adminContainer').style.display = 'none';
+        }
+
+        // 显示管理页面
+        function showAdmin() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('adminContainer').style.display = 'block';
+            if (!quill) initEditor();
+        }
+
+        // 登录
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const res = await fetch('/blog/api/?action=login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await res.json();
+                
+                if (data.code === 200) {
+                    alert('登录成功！');
+                    showAdmin();
+                    loadStats();
+                    loadPosts();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('登录失败：' + error.message);
+            }
+        });
+
+        // 退出登录
+        async function logout() {
+            if (!confirm('确定要退出登录吗？')) return;
+            
+            try {
+                await fetch('/blog/api/?action=logout');
+                showLogin();
+            } catch (error) {
+                alert('退出失败：' + error.message);
+            }
+        }
+
+        // 加载统计信息
+        async function loadStats() {
+            try {
+                const res = await fetch('/blog/api/?action=stats');
+                const data = await res.json();
+                
+                if (data.code === 200) {
+                    const stats = data.data;
+                    document.getElementById('statsContainer').innerHTML = `
+                        <div class="stat-card">
+                            <h3>已发布文章</h3>
+                            <div class="number">${stats.total_posts || 0}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>草稿文章</h3>
+                            <div class="number">${stats.draft_posts || 0}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>总浏览量</h3>
+                            <div class="number">${stats.total_views || 0}</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载统计失败:', error);
+            }
+        }
+
+        // 加载文章列表
+        async function loadPosts(page = 1) {
+            currentPage = page;
+            
+            try {
+                const res = await fetch(`/blog/api/?action=list&page=${page}&pageSize=10&status=all`);
+                const data = await res.json();
+                
+                if (data.code === 200) {
+                    renderPosts(data.data.posts);
+                    renderPagination(data.data);
+                }
+            } catch (error) {
+                console.error('加载文章失败:', error);
+            }
+        }
+
+        // 渲染文章列表
+        function renderPosts(posts) {
+            const tbody = document.getElementById('postsTableBody');
+            
+            if (!posts || posts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">暂无文章</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = posts.map(post => `
+                <tr>
+                    <td><strong>${post.title}</strong></td>
+                    <td><span class="status-badge status-${post.status}">${post.status === 'published' ? '已发布' : '草稿'}</span></td>
+                    <td>${post.author}</td>
+                    <td>${post.view_count}</td>
+                    <td>${new Date(post.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn-secondary" onclick="editPost(${post.id})">编辑</button>
+                        <button class="btn-danger" onclick="deletePost(${post.id})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 渲染分页
+        function renderPagination(data) {
+            const pagination = document.getElementById('pagination');
+            const pages = [];
+            
+            for (let i = 1; i <= data.totalPages; i++) {
+                pages.push(`<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadPosts(${i})">${i}</button>`);
+            }
+            
+            pagination.innerHTML = pages.join('');
+        }
+
+        // 打开编辑器
+        function openEditor(postId = null) {
+            currentPostId = postId;
+            document.getElementById('editorModal').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+            
+            if (postId) {
+                document.getElementById('editorTitle').textContent = '编辑文章';
+                loadPostData(postId);
+            } else {
+                document.getElementById('editorTitle').textContent = '新建文章';
+                document.getElementById('editorForm').reset();
+                document.getElementById('postId').value = '';
+                document.getElementById('previewToggle').checked = false;
+                document.getElementById('editorWrapper').classList.remove('split-view');
+                document.getElementById('previewPanel').classList.remove('active');
+                quill.setContents([]);
+                // 自动聚焦到标题输入框
+                setTimeout(() => {
+                    document.getElementById('postTitle').focus();
+                }, 100);
+            }
+            
+            // 启动自动保存
+            startAutoSave();
+        }
+
+        // 关闭编辑器
+        function closeEditor() {
+            if (quill.getText().trim().length > 1) {
+                if (!confirm('确定要关闭编辑器吗？未保存的内容将丢失。')) {
+                    return;
+                }
+            }
+            document.getElementById('editorModal').style.display = 'none';
+            document.body.style.overflow = ''; // 恢复滚动
+            clearInterval(autoSaveTimer); // 停止自动保存
+        }
+
+        // ESC键关闭编辑器，Ctrl+S保存
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('editorModal');
+            
+            // ESC 关闭编辑器
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                closeEditor();
+            }
+            
+            // Ctrl+S 或 Cmd+S 保存
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (modal.style.display === 'block') {
+                    document.getElementById('editorForm').dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        // 定时自动保存草稿（每2分钟）
+        let autoSaveTimer;
+        function startAutoSave() {
+            clearInterval(autoSaveTimer);
+            autoSaveTimer = setInterval(() => {
+                const modal = document.getElementById('editorModal');
+                if (modal.style.display === 'block' && quill.getText().trim().length > 10) {
+                    const title = document.getElementById('postTitle').value.trim();
+                    if (title) {
+                        console.log('自动保存草稿...');
+                        // 这里可以调用保存API，但设置为草稿状态
+                    }
+                }
+            }, 120000); // 2分钟
+        }
+
+        // 字数统计
+        function updateWordCount() {
+            const text = quill.getText();
+            const words = text.trim().length;
+            const editorToolbar = document.querySelector('.editor-toolbar label');
+            if (editorToolbar && words > 0) {
+                editorToolbar.innerHTML = `内容编辑器 <span style="color:#999;font-size:12px;margin-left:10px;">(${words} 字)</span>`;
+            }
+        }
+
+        // 监听编辑器变化，更新字数
+        if (quill) {
+            quill.on('text-change', function() {
+                updateWordCount();
+            });
+        }
+
+        // 加载文章数据
+        async function loadPostData(id) {
+            try {
+                const res = await fetch(`/blog/api/?action=get&id=${id}`);
+                const data = await res.json();
+                
+                if (data.code === 200) {
+                    const post = data.data;
+                    document.getElementById('postId').value = post.id;
+                    document.getElementById('postTitle').value = post.title;
+                    document.getElementById('postSlug').value = post.slug;
+                    document.getElementById('postCover').value = post.cover_image || '';
+                    document.getElementById('postSummary').value = post.summary || '';
+                    document.getElementById('postStatus').checked = post.status === 'published';
+                    quill.root.innerHTML = post.content;
+                    
+                    // 如果预览开启，更新预览
+                    if (document.getElementById('previewToggle').checked) {
+                        updatePreview();
+                    }
+                }
+            } catch (error) {
+                alert('加载文章失败：' + error.message);
+            }
+        }
+
+        // 编辑文章
+        async function editPost(id) {
+            openEditor(id);
+        }
+
+        // 保存文章
+        document.getElementById('editorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('postId').value;
+            const title = document.getElementById('postTitle').value;
+            const slug = document.getElementById('postSlug').value;
+            const cover = document.getElementById('postCover').value;
+            const summary = document.getElementById('postSummary').value;
+            const content = quill.root.innerHTML;
+            const status = document.getElementById('postStatus').checked ? 'published' : 'draft';
+            
+            const postData = {
+                title,
+                slug,
+                content,
+                summary,
+                cover_image: cover,
+                status,
+                author: 'LiuEggy'
+            };
+            
+            try {
+                const action = id ? 'update' : 'create';
+                if (id) postData.id = id;
+                
+                const res = await fetch(`/blog/api/?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData)
+                });
+                
+                const data = await res.json();
+                
+                if (data.code === 200) {
+                    alert(id ? '文章更新成功！' : '文章创建成功！');
+                    closeEditor();
+                    loadPosts(currentPage);
+                    loadStats();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('保存失败：' + error.message);
+            }
+        });
+
+        // 删除文章
+        async function deletePost(id) {
+            if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) return;
+            
+            try {
+                const res = await fetch('/blog/api/?action=delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                
+                const data = await res.json();
+                
+                if (data.code === 200) {
+                    alert('文章删除成功！');
+                    loadPosts(currentPage);
+                    loadStats();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+
+        // 一键本地化封面
+        async function migrateCovers() {
+            if (!confirm('将把所有外链封面缓存到本地并更新数据库，此操作可能需要一些时间。是否继续？')) return;
+
+            const btn = event.target.closest('button');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite;">⏳</span> 处理中...';
+
+            try {
+                const res = await fetch('/blog/api/?action=migrate_covers');
+                const data = await res.json();
+                
+                btn.disabled = false;
+                btn.innerHTML = origText;
+
+                if (data.code === 200) {
+                    const result = data.data;
+                    alert(`封面本地化完成\n\n已更新：${result.updated} 张\n已跳过：${result.skipped} 张（本地或无效）\n失败：${result.failed} 张`);
+                    loadPosts(currentPage); // 刷新列表
+                } else {
+                    alert('操作失败：' + data.message);
+                }
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+                alert('处理失败：' + error.message);
+            }
+        }
+
+        // 检测是否在iframe中，如果是则隐藏导航按钮
+        if (window.self !== window.top) {
+            const headerActions = document.getElementById('headerActions');
+            if (headerActions) {
+                headerActions.style.display = 'none';
+            }
+        }
+
+        // 页面加载时检查登录状态
+        checkAuth();
+    </script>
+</body>
+</html>
