@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /data/
-Disallow: /config/
-Disallow: /class/
-Disallow: *.php$
-
-Sitemap: https://liueggy.live/sitemap.xml
