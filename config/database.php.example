@@ -1,0 +1,14 @@
+<?php
+/**
+ * 数据库配置文件示例
+ * 复制此文件为 database.php 并填入你的数据库信息
+ */
+
+return [
+    'host' => 'localhost',
+    'database' => 'your_database_name',
+    'username' => 'your_username',
+    'password' => 'your_password',
+    'charset' => 'utf8mb4',
+    'port' => 3306
+];
