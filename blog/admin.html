@@ -841,7 +841,13 @@
                 </div>
                 <div class="form-group">
                     <div class="editor-toolbar">
-                        <label>内容编辑器</label>
+                        <div style="flex:1;">
+                            <label>内容编辑器</label>
+                            <div style="display:flex;gap:15px;margin-top:5px;font-size:12px;color:#999;">
+                                <span>字数: <strong id="wordCount" style="color:#333;">0</strong></span>
+                                <span>字符: <strong id="charCount" style="color:#333;">0</strong></span>
+                            </div>
+                        </div>
                         <div class="preview-toggle">
                             <span style="font-size:13px;color:#666;">实时预览</span>
                             <label class="toggle-switch">
@@ -849,6 +855,9 @@
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
+                    </div>
+                    <div style="background:#fff9e6;border:1px solid #ffe4a3;border-radius:4px;padding:8px 12px;margin:10px 0;font-size:12px;color:#856404;">
+                        💡 <strong>快捷键:</strong> Ctrl+B 加粗 | Ctrl+I 斜体 | Ctrl+U 下划线 | Ctrl+S 保存 | Ctrl+Shift+L 代码块
                     </div>
                     <div class="editor-container-wrapper" id="editorWrapper">
                         <div class="editor-panel">
@@ -919,6 +928,22 @@
                 }
             });
 
+            // 字数统计
+            quill.on('text-change', function() {
+                updateWordCount();
+                updatePreview();
+            });
+
+            // 快捷键支持
+            quill.keyboard.addBinding({
+                key: 'S',
+                ctrlKey: true,
+                handler: function() {
+                    document.getElementById('editorForm').dispatchEvent(new Event('submit'));
+                    return false;
+                }
+            });
+
             // 监听粘贴事件 - 自动转换 Markdown
             quill.root.addEventListener('paste', function(e) {
                 const clipboardData = e.clipboardData || window.clipboardData;
@@ -947,6 +972,16 @@
             quill.on('text-change', function() {
                 updatePreview();
             });
+        }
+
+        // 字数统计
+        function updateWordCount() {
+            const text = quill.getText().trim();
+            const chars = text.length;
+            const words = text ? text.split(/\s+/).length : 0;
+            
+            document.getElementById('charCount').textContent = chars;
+            document.getElementById('wordCount').textContent = words;
         }
 
         // 检测是否为 Markdown 格式

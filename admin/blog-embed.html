@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#f5f5f5; color:#333; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; padding:20px; }
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; border:1px solid #e0e0e0; border-radius:8px; padding:20px; text-align:center; }
+        .stat-card h3 { color:#999; font-size:12px; margin-bottom:8px; text-transform:uppercase; font-weight:normal; }
+        .stat-card .number { font-size:32px; font-weight:700; color:#333; }
+        .main-content { background:white; border:1px solid #e0e0e0; border-radius:8px; padding:20px; }
+        .toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .search-box { flex:1; min-width:200px; }
+        .search-box input, .filter-group select { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:4px; background:white; color:#333; font-size:14px; }
+        .filter-group { display:flex; gap:10px; flex-wrap:wrap; }
+        .btn { padding:8px 14px; border:1px solid #ddd; background:white; color:#333; border-radius:4px; font-size:14px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; transition:all 0.2s; }
+        .btn:hover { background:#f5f5f5; }
+        .btn-primary { background:#333; color:white; border-color:#333; }
+        .btn-primary:hover { background:#222; }
+        .btn-success { background:#16a34a; border-color:#16a34a; color:#fff; }
+        .btn-success:hover { background:#15803d; }
+        .btn-danger { background:#e74c3c; border-color:#e74c3c; color:#fff; }
+        .btn-danger:hover { background:#c0392b; }
+        .btn-small { padding:6px 10px; font-size:13px; }
+        
+        .post-list { list-style:none; }
+        .post-item { background:#fafafa; border:1px solid #e0e0e0; border-radius:8px; padding:16px; margin-bottom:15px; }
+        .post-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+        .post-title { font-size:16px; font-weight:600; color:#333; margin-bottom:6px; }
+        .post-meta { display:flex; gap:15px; font-size:13px; color:#999; margin-bottom:10px; }
+        .post-summary { color:#666; line-height:1.6; margin-bottom:10px; font-size:14px; }
+        .post-tags { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+        .tag { background:white; color:#666; padding:4px 10px; border-radius:4px; font-size:12px; border:1px solid #e0e0e0; }
+        .post-actions { display:flex; gap:8px; flex-wrap:wrap; }
+        .status-badge { display:inline-block; padding:4px 10px; border-radius:4px; font-size:12px; border:1px solid #e0e0e0; }
+        .status-published { background:#d4edda; color:#155724; border-color:#c3e6cb; }
+        .status-draft { background:#fff3cd; color:#856404; border-color:#ffeeba; }
+        .pagination { display:flex; justify-content:center; gap:8px; margin-top:20px; }
+        .pagination button { padding:8px 14px; border:1px solid #ddd; background:white; color:#333; border-radius:4px; cursor:pointer; font-size:14px; }
+        .pagination button.active { background:#333; color:white; border-color:#333; }
+        .pagination button:disabled { opacity:.5; cursor:not-allowed; }
+        
+        /* 编辑器样式 */
+        .editor-container { display:none; }
+        .editor-container.active { display:block; }
+        .editor-layout { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px; }
+        .editor-panel { background:#fafafa; border:1px solid #e0e0e0; border-radius:8px; padding:16px; }
+        .editor-panel h3 { font-size:14px; color:#666; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; margin-bottom:8px; color:#666; font-size:14px; font-weight:500; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:4px; background:white; color:#333; font-size:14px; transition:border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:#4A9EFF; }
+        .form-group textarea { min-height:500px; font-family:'Consolas','Monaco','Courier New',monospace; line-height:1.6; resize:vertical; }
+        
+        /* Markdown工具栏 */
+        .markdown-toolbar { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px; padding:8px; background:#f9f9f9; border:1px solid #e0e0e0; border-radius:4px; }
+        .markdown-toolbar button { padding:6px 10px; border:1px solid #ddd; background:white; color:#666; border-radius:3px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; }
+        .markdown-toolbar button:hover { background:#f5f5f5; color:#333; border-color:#ccc; }
+        .markdown-toolbar .separator { width:1px; background:#e0e0e0; margin:0 4px; }
+        
+        /* 预览区域 */
+        .preview-content { background:white; padding:20px; border:1px solid #e0e0e0; border-radius:4px; min-height:500px; max-height:700px; overflow-y:auto; }
+        .preview-content h1 { font-size:28px; margin-bottom:16px; }
+        .preview-content h2 { font-size:24px; margin:20px 0 12px; }
+        .preview-content h3 { font-size:20px; margin:16px 0 10px; }
+        .preview-content p { line-height:1.8; margin-bottom:12px; }
+        .preview-content code { background:#f5f5f5; padding:2px 6px; border-radius:3px; font-family:monospace; }
+        .preview-content pre { background:#2d2d2d; color:#f8f8f2; padding:16px; border-radius:4px; overflow-x:auto; margin:12px 0; }
+        .preview-content pre code { background:transparent; padding:0; }
+        .preview-content blockquote { border-left:4px solid #4A9EFF; padding-left:16px; color:#666; margin:12px 0; }
+        .preview-content ul, .preview-content ol { padding-left:24px; margin-bottom:12px; }
+        .preview-content li { margin-bottom:6px; }
+        
+        /* 字数统计 */
+        .editor-stats { display:flex; gap:20px; padding:8px 0; color:#999; font-size:13px; }
+        
+        /* 快捷键提示 */
+        .shortcuts-hint { background:#fff9e6; border:1px solid #ffe4a3; border-radius:4px; padding:10px; margin-bottom:12px; font-size:13px; color:#856404; }
+        
+        .form-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; padding-top:20px; border-top:1px solid #e0e0e0; }
+        .loading, .empty-state { text-align:center; padding: 24px; color: #999; }
+        
+        @media (max-width: 1200px){ 
+            .editor-layout { grid-template-columns: 1fr; }
+            .stats-grid{ grid-template-columns: repeat(2,1fr);} 
+        }
+    </style>
+</head>
+<body>
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <h3>总文章数</h3>
+            <div class="number" id="totalPosts">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>已发布</h3>
+            <div class="number" id="publishedPosts">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>草稿</h3>
+            <div class="number" id="draftPosts">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>总浏览量</h3>
+            <div class="number" id="totalViews">-</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div id="listView">
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="搜索文章标题...">
+                </div>
+                <div class="filter-group">
+                    <select id="statusFilter">
+                        <option value="">全部状态</option>
+                        <option value="1">已发布</option>
+                        <option value="0">草稿</option>
+                    </select>
+                    <select id="categoryFilter">
+                        <option value="">全部分类</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="showEditor()">+ 写文章</button>
+                </div>
+            </div>
+
+            <ul class="post-list" id="postList"></ul>
+
+            <div class="pagination" id="pagination"></div>
+        </div>
+
+        <div class="editor-container" id="editorView">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h2 id="editorTitle" style="margin:0;">写新文章</h2>
+                <div class="editor-stats" id="editorStats">
+                    <span>字数: <strong id="wordCount">0</strong></span>
+                    <span>字符: <strong id="charCount">0</strong></span>
+                    <span>段落: <strong id="paraCount">0</strong></span>
+                </div>
+            </div>
+            
+            <div class="shortcuts-hint">
+                💡 快捷键: <strong>Ctrl+S</strong> 保存草稿 | <strong>Ctrl+B</strong> 加粗 | <strong>Ctrl+I</strong> 斜体 | <strong>Ctrl+K</strong> 插入链接 | <strong>Tab</strong> 缩进
+            </div>
+            
+            <form id="postForm">
+                <input type="hidden" id="postId">
+                
+                <div class="form-group">
+                    <label for="postTitle">标题 *</label>
+                    <input type="text" id="postTitle" required placeholder="输入文章标题" autocomplete="off">
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label for="postSlug">URL别名 (留空自动生成)</label>
+                        <input type="text" id="postSlug" placeholder="例如: my-first-post" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="postCategory">分类</label>
+                        <select id="postCategory"></select>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label for="postTags">标签 (逗号分隔)</label>
+                        <input type="text" id="postTags" placeholder="例如: 技术, JavaScript, 教程" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="postCover">封面图片URL</label>
+                        <input type="text" id="postCover" placeholder="https://example.com/image.jpg" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="postSummary">摘要 (选填,留空自动截取)</label>
+                    <textarea id="postSummary" rows="2" placeholder="文章简介..." style="min-height:60px;"></textarea>
+                </div>
+
+                <div class="editor-layout">
+                    <div class="editor-panel">
+                        <h3>
+                            Markdown编辑器
+                            <button type="button" class="btn btn-small" onclick="togglePreview()" id="previewToggle">显示预览</button>
+                        </h3>
+                        
+                        <!-- Markdown工具栏 -->
+                        <div class="markdown-toolbar">
+                            <button type="button" onclick="insertMarkdown('bold')" title="加粗 (Ctrl+B)"><strong>B</strong></button>
+                            <button type="button" onclick="insertMarkdown('italic')" title="斜体 (Ctrl+I)"><em>I</em></button>
+                            <button type="button" onclick="insertMarkdown('strikethrough')" title="删除线"><s>S</s></button>
+                            <div class="separator"></div>
+                            <button type="button" onclick="insertMarkdown('h1')" title="一级标题">H1</button>
+                            <button type="button" onclick="insertMarkdown('h2')" title="二级标题">H2</button>
+                            <button type="button" onclick="insertMarkdown('h3')" title="三级标题">H3</button>
+                            <div class="separator"></div>
+                            <button type="button" onclick="insertMarkdown('link')" title="链接 (Ctrl+K)">🔗</button>
+                            <button type="button" onclick="insertMarkdown('image')" title="图片">🖼️</button>
+                            <button type="button" onclick="insertMarkdown('code')" title="行内代码">`code`</button>
+                            <button type="button" onclick="insertMarkdown('codeblock')" title="代码块">```</button>
+                            <div class="separator"></div>
+                            <button type="button" onclick="insertMarkdown('ul')" title="无序列表">• 列表</button>
+                            <button type="button" onclick="insertMarkdown('ol')" title="有序列表">1. 列表</button>
+                            <button type="button" onclick="insertMarkdown('quote')" title="引用">❝ 引用</button>
+                            <button type="button" onclick="insertMarkdown('hr')" title="分割线">━━</button>
+                            <div class="separator"></div>
+                            <button type="button" onclick="insertMarkdown('table')" title="表格">📊</button>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom:0;">
+                            <textarea id="postContent" required placeholder="# 开始写作...&#10;&#10;在这里输入你的文章内容,支持完整的Markdown语法。"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-panel" id="previewPanel" style="display:none;">
+                        <h3>实时预览</h3>
+                        <div class="preview-content" id="previewContent">
+                            <p style="color:#999;text-align:center;padding:40px 0;">预览内容将显示在这里...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn" onclick="cancelEdit()">取消</button>
+                    <button type="button" class="btn" onclick="savePost(0)">保存草稿</button>
+                    <button type="button" class="btn btn-success" onclick="savePost(1)">发布文章</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/admin/blog-embed.js?v=1"></script>
+</body>
+</html>

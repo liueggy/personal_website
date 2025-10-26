@@ -2,25 +2,83 @@
 /**
  * 博客文章管理 API
  * 提供文章的增删改查、发布、统计等功能
+ * 性能优化: 缓存、延迟 session 启动
  */
 
+// 性能优化: 只在需要时启动 session
+$needsSession = false;
+if (isset($_SERVER['HTTP_AUTHORIZATION']) || isset($_COOKIE['PHPSESSID'])) {
+    session_start();
+    $needsSession = true;
+}
+
+// 输出缓存控制
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-require_once __DIR__ . '/../class/Database.php';
-
+require_once __DIR__ . '/class/Database.php';
 // 简单的身份验证
-session_start();
 define('ADMIN_PASSWORD_HASH', '$2y$10$YourHashHere'); // 使用与 admin/api.php 相同的密码
 
-function requireAuth() {
-    if (!isset($_SESSION['admin_token']) || $_SESSION['admin_token'] !== 'liueggy_admin_2024') {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => '未授权访问']);
-        exit;
+// 简单的内存缓存
+class SimpleCache {
+    private static $cache = [];
+    private static $ttl = [];
+    
+    public static function get($key) {
+        if (isset(self::$cache[$key]) && self::$ttl[$key] > time()) {
+            return self::$cache[$key];
+        }
+        return null;
     }
+    
+    public static function set($key, $value, $seconds = 60) {
+        self::$cache[$key] = $value;
+        self::$ttl[$key] = time() + $seconds;
+    }
+    
+    public static function delete($key) {
+        unset(self::$cache[$key], self::$ttl[$key]);
+    }
+    
+    public static function clear() {
+        self::$cache = [];
+        self::$ttl = [];
+    }
+}
+
+function requireAuth() {
+    global $needsSession;
+    
+    // 确保 session 已启动
+    if (!$needsSession && session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    // 支持两种认证方式: Session 和 Bearer Token
+    // 1. 检查 Session
+    if (isset($_SESSION['admin_token']) && $_SESSION['admin_token'] === 'liueggy_admin_2024') {
+        return true;
+    }
+    
+    // 2. 检查 Bearer Token
+    $headers = getallheaders();
+    if (isset($headers['Authorization'])) {
+        $token = str_replace('Bearer ', '', $headers['Authorization']);
+        if ($token === 'liueggy_admin_2024') {
+            return true;
+        }
+    }
+    
+    // 都不匹配则返回401
+    http_response_code(401);
+    echo json_encode([
+        'success' => false, 
+        'message' => '未授权访问'
+    ]);
+    exit;
 }
 
 function generateId() {
@@ -79,6 +137,16 @@ function handleGet($action, $db) {
             $status = isset($_GET['status']) ? intval($_GET['status']) : null;
             $category = $_GET['category'] ?? null;
             
+            // 缓存键
+            $cacheKey = "blog_list_{$page}_{$limit}_{$status}_{$category}";
+            $cached = SimpleCache::get($cacheKey);
+            if ($cached !== null) {
+                // 添加缓存命中头
+                header('X-Cache: HIT');
+                echo $cached;
+                return;
+            }
+            
             $where = [];
             $params = [];
             
@@ -87,23 +155,24 @@ function handleGet($action, $db) {
                 $params[] = $status;
             }
             
-            if ($category) {
-                $where[] = 'category = ?';
-                $params[] = $category;
-            }
+            // category 字段不存在,暂时注释
+            // if ($category) {
+            //     $where[] = 'category = ?';
+            //     $params[] = $category;
+            // }
             
             $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
             
             // 获取总数
-            $total = $db->fetchOne(
+            $total = $db->queryOne(
                 "SELECT COUNT(*) as count FROM blog_posts $whereClause",
                 $params
             )['count'];
             
-            // 获取文章列表
-            $posts = $db->fetchAll(
-                "SELECT id, title, slug, summary, cover_image, category, tags, 
-                        status, views, created_at, updated_at, published_at
+            // 获取文章列表 - 使用实际存在的字段
+            $posts = $db->query(
+                "SELECT id, title, slug, summary, cover_image, author,
+                        status, view_count, created_at, updated_at
                  FROM blog_posts 
                  $whereClause
                  ORDER BY created_at DESC 
@@ -111,7 +180,7 @@ function handleGet($action, $db) {
                 array_merge($params, [$limit, $offset])
             );
             
-            echo json_encode([
+            $response = json_encode([
                 'success' => true,
                 'data' => [
                     'posts' => $posts,
@@ -123,6 +192,11 @@ function handleGet($action, $db) {
                     ]
                 ]
             ]);
+            
+            // 缓存 5 分钟
+            SimpleCache::set($cacheKey, $response, 300);
+            header('X-Cache: MISS');
+            echo $response;
             break;
             
         case 'detail':
@@ -131,12 +205,12 @@ function handleGet($action, $db) {
             $slug = $_GET['slug'] ?? '';
             
             if ($id) {
-                $post = $db->fetchOne(
+                $post = $db->queryOne(
                     "SELECT * FROM blog_posts WHERE id = ?",
                     [$id]
                 );
             } elseif ($slug) {
-                $post = $db->fetchOne(
+                $post = $db->queryOne(
                     "SELECT * FROM blog_posts WHERE slug = ?",
                     [$slug]
                 );
@@ -165,7 +239,7 @@ function handleGet($action, $db) {
             
         case 'categories':
             // 获取所有分类
-            $categories = $db->fetchAll(
+            $categories = $db->query(
                 "SELECT * FROM blog_categories ORDER BY name ASC"
             );
             
@@ -179,18 +253,32 @@ function handleGet($action, $db) {
             // 获取统计信息（需要管理员权限）
             requireAuth();
             
+            // 缓存键
+            $cacheKey = "blog_stats";
+            $cached = SimpleCache::get($cacheKey);
+            if ($cached !== null) {
+                header('X-Cache: HIT');
+                echo $cached;
+                return;
+            }
+            
             $stats = [
-                'total' => $db->fetchOne("SELECT COUNT(*) as count FROM blog_posts")['count'],
-                'published' => $db->fetchOne("SELECT COUNT(*) as count FROM blog_posts WHERE status = 1")['count'],
-                'draft' => $db->fetchOne("SELECT COUNT(*) as count FROM blog_posts WHERE status = 0")['count'],
-                'total_views' => $db->fetchOne("SELECT SUM(views) as total FROM blog_posts")['total'] ?? 0,
-                'categories' => $db->fetchAll("SELECT * FROM blog_categories ORDER BY post_count DESC")
+                'total' => (int)$db->queryOne("SELECT COUNT(*) as count FROM blog_posts")['count'],
+                'published' => (int)$db->queryOne("SELECT COUNT(*) as count FROM blog_posts WHERE status = 'published'")['count'],
+                'draft' => (int)$db->queryOne("SELECT COUNT(*) as count FROM blog_posts WHERE status = 'draft'")['count'],
+                'total_views' => (int)($db->queryOne("SELECT SUM(view_count) as total FROM blog_posts")['total'] ?? 0),
+                'categories' => []  // 暂时返回空数组，因为还没有分类表
             ];
             
-            echo json_encode([
+            $response = json_encode([
                 'success' => true,
                 'data' => $stats
             ]);
+            
+            // 缓存 1 分钟
+            SimpleCache::set($cacheKey, $response, 60);
+            header('X-Cache: MISS');
+            echo $response;
             break;
             
         default:
@@ -201,12 +289,14 @@ function handleGet($action, $db) {
 function handlePost($action, $db) {
     requireAuth();
     
+    // 清除缓存
+    SimpleCache::clear();
+    
     $input = json_decode(file_get_contents('php://input'), true);
     
     switch ($action) {
         case 'create':
             // 创建新文章
-            $id = generateId();
             $title = trim($input['title'] ?? '');
             $content = trim($input['content'] ?? '');
             
@@ -218,44 +308,43 @@ function handlePost($action, $db) {
                 throw new Exception('内容不能为空');
             }
             
-            $slug = $input['slug'] ?? generateSlug($title, $id);
+            // 先生成一个临时 slug,如果用户没提供
+            $slug = $input['slug'] ?? generateSlug($title);
+            if (empty($slug)) {
+                $slug = 'post-' . time();
+            }
+            
             $summary = trim($input['summary'] ?? '');
             $coverImage = trim($input['cover_image'] ?? '');
-            $category = trim($input['category'] ?? '');
-            $tags = trim($input['tags'] ?? '');
-            $status = isset($input['status']) ? intval($input['status']) : 0;
+            $author = trim($input['author'] ?? 'LiuEggy');
+            // status 是 enum: 'draft' 或 'published'
+            $status = (isset($input['status']) && $input['status'] == 1) ? 'published' : 'draft';
             
             // 检查slug是否已存在
-            $exists = $db->fetchOne(
+            $exists = $db->queryOne(
                 "SELECT id FROM blog_posts WHERE slug = ?",
                 [$slug]
             );
             
             if ($exists) {
-                $slug .= '-' . substr($id, 0, 6);
+                $slug .= '-' . time();
             }
             
-            $publishedAt = $status == 1 ? date('Y-m-d H:i:s') : null;
-            
+            // 不指定 id,让数据库自动生成
             $result = $db->execute(
                 "INSERT INTO blog_posts 
-                 (id, title, slug, summary, content, cover_image, category, tags, status, published_at) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                [$id, $title, $slug, $summary, $content, $coverImage, $category, $tags, $status, $publishedAt]
+                 (title, slug, summary, content, cover_image, author, status) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)",
+                [$title, $slug, $summary, $content, $coverImage, $author, $status]
             );
             
-            // 更新分类计数
-            if ($category && $status == 1) {
-                $db->execute(
-                    "UPDATE blog_categories SET post_count = post_count + 1 WHERE slug = ?",
-                    [$category]
-                );
-            }
+            // 获取新插入的 id
+            $newId = $db->lastInsertId();
             
             echo json_encode([
                 'success' => true,
                 'message' => '文章创建成功',
-                'data' => ['id' => $id, 'slug' => $slug]
+                'data' => ['id' => $newId, 'slug' => $slug]
             ]);
             break;
             
@@ -288,6 +377,9 @@ function handlePost($action, $db) {
 function handlePut($action, $db) {
     requireAuth();
     
+    // 清除缓存
+    SimpleCache::clear();
+    
     $input = json_decode(file_get_contents('php://input'), true);
     
     switch ($action) {
@@ -300,8 +392,8 @@ function handlePut($action, $db) {
             }
             
             // 获取原文章信息
-            $oldPost = $db->fetchOne(
-                "SELECT status, category FROM blog_posts WHERE id = ?",
+            $oldPost = $db->queryOne(
+                "SELECT status FROM blog_posts WHERE id = ?",
                 [$id]
             );
             
@@ -337,42 +429,16 @@ function handlePut($action, $db) {
                 $params[] = trim($input['cover_image']);
             }
             
-            if (isset($input['category'])) {
-                $updates[] = 'category = ?';
-                $params[] = trim($input['category']);
-            }
-            
-            if (isset($input['tags'])) {
-                $updates[] = 'tags = ?';
-                $params[] = trim($input['tags']);
+            if (isset($input['author'])) {
+                $updates[] = 'author = ?';
+                $params[] = trim($input['author']);
             }
             
             if (isset($input['status'])) {
-                $newStatus = intval($input['status']);
+                // status 是 enum: 'draft' 或 'published'
+                $newStatus = ($input['status'] == 1 || $input['status'] === 'published') ? 'published' : 'draft';
                 $updates[] = 'status = ?';
                 $params[] = $newStatus;
-                
-                // 如果从草稿变为发布，设置发布时间
-                if ($oldPost['status'] == 0 && $newStatus == 1) {
-                    $updates[] = 'published_at = NOW()';
-                    
-                    // 更新分类计数
-                    if ($oldPost['category']) {
-                        $db->execute(
-                            "UPDATE blog_categories SET post_count = post_count + 1 WHERE slug = ?",
-                            [$oldPost['category']]
-                        );
-                    }
-                }
-                // 如果从发布变为草稿，减少分类计数
-                elseif ($oldPost['status'] == 1 && $newStatus == 0) {
-                    if ($oldPost['category']) {
-                        $db->execute(
-                            "UPDATE blog_categories SET post_count = post_count - 1 WHERE slug = ?",
-                            [$oldPost['category']]
-                        );
-                    }
-                }
             }
             
             if (empty($updates)) {
@@ -400,6 +466,9 @@ function handlePut($action, $db) {
 function handleDelete($action, $db) {
     requireAuth();
     
+    // 清除缓存
+    SimpleCache::clear();
+    
     $input = json_decode(file_get_contents('php://input'), true);
     
     switch ($action) {
@@ -412,7 +481,7 @@ function handleDelete($action, $db) {
             }
             
             // 获取文章信息用于更新分类计数
-            $post = $db->fetchOne(
+            $post = $db->queryOne(
                 "SELECT status, category FROM blog_posts WHERE id = ?",
                 [$id]
             );

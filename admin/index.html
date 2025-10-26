@@ -64,8 +64,209 @@
         .status-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-left: 8px; }
         .status-badge.active { background: #d4edda; color: #155724; }
         .status-badge.hidden { background: #f8d7da; color: #721c24; }
-        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
-        iframe { width: 100%; height: calc(100vh - 180px); border: 1px solid #e0e0e0; border-radius: 8px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #999; }
+    iframe { width: 100%; height: calc(100vh - 180px); border: 1px solid #e0e0e0; border-radius: 8px; }
+
+    /* 主题管理样式 - 简洁风格 */
+    .theme-alert { padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; display: none; font-size: 14px; }
+    .theme-alert.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .theme-alert.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    
+    .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .theme-card { 
+        background: #fff; 
+        border: 2px solid #e5e7eb; 
+        border-radius: 8px; 
+        overflow: hidden; 
+        transition: all 0.2s ease; 
+        cursor: pointer; 
+    }
+    .theme-card:hover { 
+        border-color: #6b7280; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+    }
+    .theme-card.active { 
+        border-color: #2563eb; 
+        background: #eff6ff;
+    }
+    
+    .theme-card .thumb { 
+        height: 100px; 
+        background: #f9fafb; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        color: #374151; 
+        font-size: 16px; 
+        font-weight: 600; 
+        position: relative;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .theme-card.active .thumb { 
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    .theme-card.active .thumb::after { 
+        content: '✓'; 
+        position: absolute; 
+        top: 8px; 
+        right: 8px; 
+        background: #2563eb; 
+        color: white; 
+        width: 20px;
+        height: 20px;
+        border-radius: 50%; 
+        font-size: 12px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .theme-card .body { padding: 16px; }
+    .theme-card .title { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 6px; }
+    .theme-card .desc { color: #6b7280; font-size: 13px; line-height: 1.5; margin-bottom: 12px; min-height: 40px; }
+    
+    .theme-card .footer { 
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between; 
+        font-size: 11px; 
+        color: #9ca3af; 
+    }
+    .theme-card .btn-primary { 
+        padding: 6px 14px; 
+        border: none; 
+        background: #111827; 
+        color: white; 
+        border-radius: 4px; 
+        cursor: pointer; 
+        font-size: 13px; 
+        transition: background 0.2s;
+    }
+    .theme-card .btn-primary:hover { background: #374151; }
+    .theme-card .btn-primary:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+    .theme-card .btn-config {
+        padding: 6px 14px; 
+        border: 1px solid #d1d5db; 
+        background: white; 
+        color: #374151; 
+        border-radius: 4px; 
+        cursor: pointer; 
+        font-size: 13px; 
+        transition: all 0.2s;
+        margin-left: 8px;
+    }
+    .theme-card .btn-config:hover { 
+        border-color: #6b7280; 
+        background: #f9fafb;
+    }
+
+    /* 主题配置表单样式 */
+    .config-form { max-width: 800px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { 
+        display: block; 
+        margin-bottom: 8px; 
+        font-weight: 500; 
+        color: #374151; 
+        font-size: 14px;
+    }
+    .form-group input, 
+    .form-group textarea, 
+    .form-group select { 
+        width: 100%; 
+        padding: 10px 12px; 
+        border: 1px solid #d1d5db; 
+        border-radius: 6px; 
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.2s;
+    }
+    .form-group input:focus, 
+    .form-group textarea:focus, 
+    .form-group select:focus { 
+        outline: none; 
+        border-color: #2563eb; 
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .form-group textarea { 
+        min-height: 80px; 
+        resize: vertical; 
+    }
+    .form-group small { 
+        display: block; 
+        margin-top: 4px; 
+        color: #6b7280; 
+        font-size: 12px;
+    }
+    .form-actions { 
+        display: flex; 
+        gap: 12px; 
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #e5e7eb;
+    }
+    .btn-save { 
+        padding: 10px 24px; 
+        background: #2563eb; 
+        color: white; 
+        border: none; 
+        border-radius: 6px; 
+        font-size: 14px; 
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-save:hover { background: #1d4ed8; }
+    .btn-reset { 
+        padding: 10px 24px; 
+        background: white; 
+        color: #374151; 
+        border: 1px solid #d1d5db; 
+        border-radius: 6px; 
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-reset:hover { 
+        border-color: #6b7280; 
+        background: #f9fafb;
+    }
+    .dynamic-list { 
+        border: 1px solid #e5e7eb; 
+        border-radius: 6px; 
+        padding: 12px;
+        margin-top: 8px;
+    }
+    .dynamic-item { 
+        display: flex; 
+        gap: 8px; 
+        margin-bottom: 8px; 
+        align-items: center;
+    }
+    .dynamic-item input { 
+        flex: 1; 
+        margin-bottom: 0;
+    }
+    .btn-remove { 
+        padding: 6px 10px; 
+        background: #fee; 
+        color: #c33; 
+        border: 1px solid #fcc; 
+        border-radius: 4px; 
+        font-size: 12px;
+        cursor: pointer;
+    }
+    .btn-add { 
+        padding: 6px 12px; 
+        background: #f0fdf4; 
+        color: #166534; 
+        border: 1px solid #bbf7d0; 
+        border-radius: 4px; 
+        font-size: 13px;
+        cursor: pointer;
+        margin-top: 8px;
+    }
         
         @media (max-width: 768px) {
             .sidebar { width: 60px; }
@@ -109,6 +310,7 @@
                 <button class="nav-item" onclick="showPage('contact')">留言管理</button>
                 <button class="nav-item" onclick="showPage('comments')">评论管理</button>
                 <button class="nav-item" onclick="showPage('blog')">博客管理</button>
+                <button class="nav-item" onclick="showPage('themes')">首页主题</button>
                 
             </nav>
             
@@ -148,10 +350,42 @@
                 </div>
                 
                 <div id="blog" class="page">
-                    <iframe src="/blog/admin.html"></iframe>
+                    <iframe src="/admin/blog.html" style="width:100%;height:calc(100vh - 60px);border:none;"></iframe>
                 </div>
                 
-                
+                <!-- 主题管理页面 -->
+                <div id="themes" class="page">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">首页主题</h2>
+                        </div>
+                        
+                        <div id="theme-alert" class="theme-alert"></div>
+                        
+                        <div id="themes-grid" class="theme-grid">
+                            <!-- 主题卡片将动态加载 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 主题配置页面 -->
+                <div id="theme-config" class="page">
+                    <div class="section">
+                        <div class="section-header" style="margin-bottom: 20px;">
+                            <button onclick="showPage('themes')" style="background:none;border:none;color:#666;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:6px;">
+                                ← 返回主题列表
+                            </button>
+                        </div>
+                        
+                        <h2 class="section-title" id="config-theme-title" style="margin-bottom: 20px;">主题配置</h2>
+                        
+                        <div id="config-alert" class="theme-alert"></div>
+                        
+                        <div id="theme-config-form">
+                            <!-- 配置表单将动态加载 -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -219,9 +453,10 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            event.target.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
             if (pageId === 'contact') loadList('contact', currentFilter.contact);
             else if (pageId === 'comments') loadList('blog', currentFilter.blog);
+            else if (pageId === 'themes') loadThemes();
         }
         
         async function loadData() {
@@ -343,6 +578,480 @@
             if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
             if (diff < 604800) return Math.floor(diff / 86400) + '天前';
             return date.toLocaleDateString('zh-CN');
+        }
+
+        // ========== 首页主题管理 ==========
+        async function loadThemes() {
+            setThemeAlert('', '');
+            const grid = document.getElementById('themes-grid');
+            if (!grid) return;
+            grid.innerHTML = '<div class="empty-state">加载中...</div>';
+            try {
+                const res = await fetch('/api/theme.php?action=get', { cache: 'no-store' });
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch (e) {
+                    setThemeAlert('接口返回不是有效 JSON', 'error');
+                    return;
+                }
+                if (data.code !== 200 || !data.data) {
+                    setThemeAlert(data.message || '加载主题失败', 'error');
+                    return;
+                }
+                renderThemeGrid(data.data);
+            } catch (err) {
+                setThemeAlert('加载失败：' + err.message, 'error');
+            }
+        }
+
+        function renderThemeGrid(cfg) {
+            const grid = document.getElementById('themes-grid');
+            const { current_theme, themes } = cfg;
+            const entries = Object.entries(themes || {});
+            if (!entries.length) {
+                grid.innerHTML = '<div class="empty-state">暂无主题配置</div>';
+                return;
+            }
+            grid.innerHTML = entries.map(([key, info]) => {
+                const title = (info && (info.title || info.name)) || key;
+                const desc = (info && (info.description || info.desc)) || '';
+                const isActive = current_theme === key;
+                return `
+                    <div class="theme-card ${isActive ? 'active' : ''}">
+                        <div class="thumb">${escapeHtml(title)}</div>
+                        <div class="body">
+                            <div class="title">${escapeHtml(title)}</div>
+                            <div class="desc">${escapeHtml(desc)}</div>
+                        </div>
+                        <div class="footer">
+                            <span>${escapeHtml(key)}</span>
+                            <div>
+                                ${!isActive ? `<button class="btn-primary" onclick="switchTheme('${key}')">启用</button>` : '<span style="color:#059669;font-weight:500;font-size:13px;">● 当前</span>'}
+                                <button class="btn-config" onclick="configTheme('${key}')">配置</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function switchTheme(key) {
+            setThemeAlert('', '');
+            try {
+                const res = await fetch('/api/theme.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body: new URLSearchParams({ action: 'set', theme: key }).toString()
+                });
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch (e) {
+                    setThemeAlert('切换失败：接口返回不是有效 JSON', 'error');
+                    return;
+                }
+                if (data.code === 200) {
+                    setThemeAlert('主题已切换为：' + key, 'success');
+                    await loadThemes();
+                } else {
+                    setThemeAlert(data.message || '切换失败', 'error');
+                }
+            } catch (err) {
+                setThemeAlert('切换失败：' + err.message, 'error');
+            }
+        }
+
+        function setThemeAlert(msg, type) {
+            const el = document.getElementById('theme-alert');
+            if (!el) return;
+            if (msg) { 
+                el.textContent = msg; 
+                el.className = 'theme-alert ' + (type || 'error');
+                el.style.display = 'block'; 
+            } else { 
+                el.textContent = ''; 
+                el.style.display = 'none'; 
+            }
+        }
+
+        function configTheme(themeId) {
+            // 显示配置页面
+            currentConfigTheme = themeId;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('theme-config').classList.add('active');
+            loadThemeConfig(themeId);
+        }
+
+        let currentConfigTheme = null;
+        let currentThemeData = null;
+
+        async function loadThemeConfig(themeId) {
+            setConfigAlert('', '');
+            const titleEl = document.getElementById('config-theme-title');
+            const formEl = document.getElementById('theme-config-form');
+            
+            formEl.innerHTML = '<div class="empty-state">加载中...</div>';
+            
+            try {
+                const res = await fetch('/api/theme.php?action=get', { cache: 'no-store' });
+                const data = await res.json();
+                
+                if (data.code !== 200 || !data.data) {
+                    setConfigAlert('加载配置失败', 'error');
+                    return;
+                }
+                
+                currentThemeData = data.data;
+                const themeInfo = data.data.themes[themeId];
+                
+                if (!themeInfo) {
+                    setConfigAlert('主题不存在', 'error');
+                    return;
+                }
+                
+                titleEl.textContent = `${themeInfo.name} - 配置`;
+                
+                // 根据不同主题生成不同的配置表单
+                const config = themeInfo.config || {};
+                let formHTML = '<form class="config-form" onsubmit="saveThemeConfig(event)">';
+                
+                switch(themeId) {
+                    case 'terminal':
+                        formHTML += generateTerminalForm(config);
+                        break;
+                    case 'minimal':
+                        formHTML += generateMinimalForm(config);
+                        break;
+                    case 'gradient':
+                        formHTML += generateGradientForm(config);
+                        break;
+                    case 'typewriter':
+                        formHTML += generateTypewriterForm(config);
+                        break;
+                    case 'classic':
+                        formHTML += generateClassicForm(config);
+                        break;
+                }
+                
+                formHTML += `
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save">保存配置</button>
+                        <button type="button" class="btn-reset" onclick="loadThemeConfig('${themeId}')">重置</button>
+                    </div>
+                </form>`;
+                
+                formEl.innerHTML = formHTML;
+            } catch (err) {
+                setConfigAlert('加载失败：' + err.message, 'error');
+            }
+        }
+
+        function generateTerminalForm(config) {
+            return `
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" name="username" value="${escapeHtml(config.username || 'liueggy')}" required>
+                    <small>终端提示符中显示的用户名</small>
+                </div>
+                <div class="form-group">
+                    <label>主机名</label>
+                    <input type="text" name="hostname" value="${escapeHtml(config.hostname || 'cdut-dev')}" required>
+                    <small>终端提示符中显示的主机名</small>
+                </div>
+                <div class="form-group">
+                    <label>欢迎文本</label>
+                    <input type="text" name="welcomeText" value="${escapeHtml(config.welcomeText || '欢迎访问')}" required>
+                </div>
+                <div class="form-group">
+                    <label>基本信息（每行一条）</label>
+                    <div class="dynamic-list" id="infoLines-list">
+                        ${(config.infoLines || []).map((line, i) => `
+                            <div class="dynamic-item">
+                                <input type="text" value="${escapeHtml(line)}" data-field="infoLines" data-index="${i}">
+                                <button type="button" class="btn-remove" onclick="removeListItem('infoLines', ${i})">删除</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button type="button" class="btn-add" onclick="addListItem('infoLines')">+ 添加信息</button>
+                </div>
+                <div class="form-group">
+                    <label>技能列表</label>
+                    <div class="dynamic-list" id="skills-list">
+                        ${(config.skills || []).map((skill, i) => `
+                            <div class="dynamic-item" style="flex-direction:column;align-items:stretch;padding:8px;background:#f9fafb;border-radius:4px;margin-bottom:8px;">
+                                <input type="text" placeholder="标签" value="${escapeHtml(skill.label)}" data-field="skills" data-index="${i}" data-prop="label" style="margin-bottom:4px;">
+                                <input type="text" placeholder="内容" value="${escapeHtml(skill.value)}" data-field="skills" data-index="${i}" data-prop="value">
+                                <button type="button" class="btn-remove" onclick="removeListItem('skills', ${i})" style="margin-top:4px;align-self:flex-end;">删除</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button type="button" class="btn-add" onclick="addListItem('skills')">+ 添加技能</button>
+                </div>
+            `;
+        }
+
+        function generateMinimalForm(config) {
+            return `
+                <div class="form-group">
+                    <label>主标题</label>
+                    <input type="text" name="mainName" value="${escapeHtml(config.mainName || 'LiuEggy')}" required>
+                    <small>超大字体显示的名字</small>
+                </div>
+                <div class="form-group">
+                    <label>技能标签</label>
+                    <input type="text" name="skills" value="${escapeHtml(config.skills || '嵌入式 · 视觉 · 设计')}" required>
+                    <small>用 · 分隔多个标签</small>
+                </div>
+                <div class="form-group">
+                    <label>学校/单位</label>
+                    <input type="text" name="school" value="${escapeHtml(config.school || '成都理工大学')}" required>
+                </div>
+                <div class="form-group">
+                    <label>渐变色起始</label>
+                    <input type="color" name="gradientColor1" value="${config.gradientColors?.[0] || '#4a9eff'}">
+                </div>
+                <div class="form-group">
+                    <label>渐变色结束</label>
+                    <input type="color" name="gradientColor2" value="${config.gradientColors?.[1] || '#764ba2'}">
+                </div>
+            `;
+        }
+
+        function generateGradientForm(config) {
+            return `
+                <div class="form-group">
+                    <label>主标题</label>
+                    <input type="text" name="mainTitle" value="${escapeHtml(config.mainTitle || 'LiuEggy')}" required>
+                </div>
+                <div class="form-group">
+                    <label>副标题</label>
+                    <input type="text" name="subtitle" value="${escapeHtml(config.subtitle || '成都理工大学')}" required>
+                </div>
+                <div class="form-group">
+                    <label>卡片内容（4个）</label>
+                    <div class="dynamic-list" id="cards-list">
+                        ${(config.cards || []).map((card, i) => `
+                            <div class="dynamic-item" style="flex-direction:column;align-items:stretch;padding:8px;background:#f9fafb;border-radius:4px;margin-bottom:8px;">
+                                <input type="text" placeholder="图标 Emoji" value="${escapeHtml(card.icon)}" data-field="cards" data-index="${i}" data-prop="icon" style="margin-bottom:4px;">
+                                <input type="text" placeholder="标题" value="${escapeHtml(card.label)}" data-field="cards" data-index="${i}" data-prop="label" style="margin-bottom:4px;">
+                                <input type="text" placeholder="详情" value="${escapeHtml(card.detail)}" data-field="cards" data-index="${i}" data-prop="detail">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <small>建议保持4个卡片以获得最佳布局效果</small>
+                </div>
+            `;
+        }
+
+        function generateTypewriterForm(config) {
+            return `
+                <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" name="name" value="${escapeHtml(config.name || 'LiuEggy')}" required>
+                </div>
+                <div class="form-group">
+                    <label>学校/单位</label>
+                    <input type="text" name="school" value="${escapeHtml(config.school || '成都理工大学')}" required>
+                </div>
+                <div class="form-group">
+                    <label>身份标签（循环显示）</label>
+                    <div class="dynamic-list" id="roles-list">
+                        ${(config.roles || []).map((role, i) => `
+                            <div class="dynamic-item">
+                                <input type="text" value="${escapeHtml(role)}" data-field="roles" data-index="${i}">
+                                <button type="button" class="btn-remove" onclick="removeListItem('roles', ${i})">删除</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button type="button" class="btn-add" onclick="addListItem('roles')">+ 添加身份</button>
+                </div>
+                <div class="form-group">
+                    <label>打字速度（毫秒）</label>
+                    <input type="number" name="typingSpeed" value="${config.typingSpeed || 80}" min="30" max="200">
+                    <small>数值越小速度越快</small>
+                </div>
+                <div class="form-group">
+                    <label>删除速度（毫秒）</label>
+                    <input type="number" name="deleteSpeed" value="${config.deleteSpeed || 50}" min="20" max="100">
+                </div>
+            `;
+        }
+
+        function generateClassicForm(config) {
+            return `
+                <div class="form-group">
+                    <label>欢迎语</label>
+                    <input type="text" name="greeting" value="${escapeHtml(config.greeting || '哇，你终于来了')}" required>
+                </div>
+                <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" name="name" value="${escapeHtml(config.name || 'LiuEggy')}" required>
+                </div>
+                <div class="form-group">
+                    <label>个人简介</label>
+                    <textarea name="intro" required>${escapeHtml(config.intro || '')}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>标签（每行一个）</label>
+                    <div class="dynamic-list" id="tags-list">
+                        ${(config.tags || []).map((tag, i) => `
+                            <div class="dynamic-item">
+                                <input type="text" value="${escapeHtml(tag)}" data-field="tags" data-index="${i}">
+                                <button type="button" class="btn-remove" onclick="removeListItem('tags', ${i})">删除</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button type="button" class="btn-add" onclick="addListItem('tags')">+ 添加标签</button>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="showClock" ${config.showClock ? 'checked' : ''}>
+                        显示时钟
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="showLiveTime" ${config.showLiveTime ? 'checked' : ''}>
+                        显示实时时间
+                    </label>
+                </div>
+            `;
+        }
+
+        function addListItem(field) {
+            const listEl = document.getElementById(field + '-list');
+            const items = listEl.querySelectorAll('.dynamic-item');
+            const newIndex = items.length;
+            
+            let itemHTML = '';
+            if (field === 'skills') {
+                itemHTML = `
+                    <div class="dynamic-item" style="flex-direction:column;align-items:stretch;padding:8px;background:#f9fafb;border-radius:4px;margin-bottom:8px;">
+                        <input type="text" placeholder="标签" value="" data-field="skills" data-index="${newIndex}" data-prop="label" style="margin-bottom:4px;">
+                        <input type="text" placeholder="内容" value="" data-field="skills" data-index="${newIndex}" data-prop="value">
+                        <button type="button" class="btn-remove" onclick="removeListItem('skills', ${newIndex})" style="margin-top:4px;align-self:flex-end;">删除</button>
+                    </div>
+                `;
+            } else if (field === 'cards') {
+                itemHTML = `
+                    <div class="dynamic-item" style="flex-direction:column;align-items:stretch;padding:8px;background:#f9fafb;border-radius:4px;margin-bottom:8px;">
+                        <input type="text" placeholder="图标 Emoji" value="" data-field="cards" data-index="${newIndex}" data-prop="icon" style="margin-bottom:4px;">
+                        <input type="text" placeholder="标题" value="" data-field="cards" data-index="${newIndex}" data-prop="label" style="margin-bottom:4px;">
+                        <input type="text" placeholder="详情" value="" data-field="cards" data-index="${newIndex}" data-prop="detail">
+                    </div>
+                `;
+            } else {
+                itemHTML = `
+                    <div class="dynamic-item">
+                        <input type="text" value="" data-field="${field}" data-index="${newIndex}">
+                        <button type="button" class="btn-remove" onclick="removeListItem('${field}', ${newIndex})">删除</button>
+                    </div>
+                `;
+            }
+            
+            listEl.insertAdjacentHTML('beforeend', itemHTML);
+        }
+
+        function removeListItem(field, index) {
+            const listEl = document.getElementById(field + '-list');
+            const items = listEl.querySelectorAll('.dynamic-item');
+            if (items[index]) {
+                items[index].remove();
+                // 重新索引
+                listEl.querySelectorAll('.dynamic-item').forEach((item, i) => {
+                    item.querySelectorAll('input').forEach(input => {
+                        input.setAttribute('data-index', i);
+                    });
+                    const btn = item.querySelector('.btn-remove');
+                    if (btn) btn.setAttribute('onclick', `removeListItem('${field}', ${i})`);
+                });
+            }
+        }
+
+        async function saveThemeConfig(event) {
+            event.preventDefault();
+            setConfigAlert('', '');
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const config = {};
+            
+            // 收集普通字段
+            for (let [key, value] of formData.entries()) {
+                if (key === 'gradientColor1' || key === 'gradientColor2') {
+                    if (!config.gradientColors) config.gradientColors = [];
+                    config.gradientColors.push(value);
+                } else if (form.elements[key].type === 'checkbox') {
+                    config[key] = form.elements[key].checked;
+                } else if (form.elements[key].type === 'number') {
+                    config[key] = parseInt(value);
+                } else {
+                    config[key] = value;
+                }
+            }
+            
+            // 收集动态列表
+            const dynamicLists = ['infoLines', 'skills', 'roles', 'tags', 'cards'];
+            dynamicLists.forEach(field => {
+                const inputs = form.querySelectorAll(`input[data-field="${field}"]`);
+                if (inputs.length > 0) {
+                    if (field === 'skills' || field === 'cards') {
+                        config[field] = [];
+                        const grouped = {};
+                        inputs.forEach(input => {
+                            const idx = input.getAttribute('data-index');
+                            const prop = input.getAttribute('data-prop');
+                            if (!grouped[idx]) grouped[idx] = {};
+                            grouped[idx][prop] = input.value;
+                        });
+                        Object.values(grouped).forEach(item => {
+                            if (Object.keys(item).length > 0) config[field].push(item);
+                        });
+                    } else {
+                        config[field] = Array.from(inputs).map(input => input.value).filter(v => v.trim());
+                    }
+                }
+            });
+            
+            // 更新配置
+            try {
+                currentThemeData.themes[currentConfigTheme].config = config;
+                
+                const res = await fetch('/api/theme.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'update_config',
+                        theme: currentConfigTheme,
+                        config: config
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.code === 200) {
+                    setConfigAlert('配置已保存！', 'success');
+                    setTimeout(() => {
+                        showPage('themes');
+                        loadThemes();
+                    }, 1000);
+                } else {
+                    setConfigAlert(data.message || '保存失败', 'error');
+                }
+            } catch (err) {
+                setConfigAlert('保存失败：' + err.message, 'error');
+            }
+        }
+
+        function setConfigAlert(msg, type) {
+            const el = document.getElementById('config-alert');
+            if (!el) return;
+            if (msg) {
+                el.textContent = msg;
+                el.className = 'theme-alert ' + (type || 'error');
+                el.style.display = 'block';
+            } else {
+                el.textContent = '';
+                el.style.display = 'none';
+            }
         }
     </script>
 </body>

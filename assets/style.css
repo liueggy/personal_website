@@ -195,17 +195,40 @@ html.light .site-header {
   justify-content: center;
   background: var(--primary-light);
   border-radius: var(--radius-md);
-  transition: opacity 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
 }
 
 .logo-wrapper:hover {
-  opacity: 0.8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+}
+
+.logo-wrapper:hover::before {
+  opacity: 0.1;
 }
 
 .logo {
   width: 32px;
   height: 32px;
   color: var(--primary);
+  transition: transform 0.3s ease;
+}
+
+.logo-wrapper:hover .logo {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .brand-text h1 {
@@ -668,6 +691,11 @@ html.light #theme-toggle .sun-icon {
   --shine: 0;           /* 0-1 */
   --glowX: 50%;         /* hotspot position */
   --glowY: 50%;
+  /* 禁用移动端触摸高亮效果 */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .flip-card-inner {
   position: relative;
@@ -680,6 +708,8 @@ html.light #theme-toggle .sun-icon {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   /* 基础倾斜（与点击翻转叠加） */
   transform: translateZ(var(--tz)) rotateX(var(--tiltX)) rotateY(var(--tiltY));
+  /* 禁用移动端触摸高亮 */
+  -webkit-tap-highlight-color: transparent;
 }
 .flip-card:is(:hover, :focus-visible) .flip-card-inner { 
   border-color: var(--primary); 

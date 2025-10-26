@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/style.css?v=15">
+    <link rel="stylesheet" href="/assets/style.css?v=16">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
 </head>
 <body>
@@ -19,8 +19,18 @@
             <a href="/" class="brand" style="text-decoration:none;cursor:pointer;">
                 <div class="logo-wrapper">
                     <svg class="logo" width="32" height="32" viewBox="0 0 100 100" fill="none">
-                        <circle cx="50" cy="50" r="40" fill="currentColor" opacity="0.2"/>
-                        <ellipse cx="50" cy="55" rx="30" ry="35" fill="currentColor"/>
+                        <!-- 外圈渐变圆环 -->
+                        <circle cx="50" cy="50" r="45" stroke="url(#logoGradient)" stroke-width="4" fill="none"/>
+                        <!-- 内部字母 L -->
+                        <path d="M 35 30 L 35 70 L 55 70" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <!-- 装饰点 -->
+                        <circle cx="65" cy="35" r="5" fill="currentColor"/>
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#4A9EFF;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#667EEA;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
                     </svg>
                 </div>
                 <div class="brand-text">
@@ -55,6 +65,14 @@
 
     <div class="article-wrapper" style="min-height:100vh;background:var(--bg-primary);padding-top:80px;">
         <div class="article-container" style="max-width:800px;margin:0 auto;padding:40px 20px 40px;">
+            <!-- 返回按钮 -->
+            <a href="/blog" class="back-button" title="返回博客列表" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;color:var(--text-secondary);text-decoration:none;margin-bottom:24px;border-radius:50%;transition:all 0.2s;border:1px solid var(--border-color);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            
             <!-- 加载与错误状态 -->
             <div id="loadingState" style="text-align:center;color:var(--text-secondary);padding:60px 0;">正在加载文章...</div>
             <div id="errorState" style="display:none;text-align:center;color:#e74c3c;padding:60px 0;">文章加载失败或不存在</div>
@@ -155,6 +173,26 @@
     </div>
 
     <style>
+        /* 返回按钮样式 */
+        .back-button {
+            background: var(--bg-secondary);
+        }
+        
+        .back-button:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        .back-button svg {
+            transition: transform 0.2s;
+        }
+        
+        .back-button:hover svg {
+            transform: translateX(-2px);
+        }
+        
         .article-cover-img {
             width: 100%;
             max-height: 500px;

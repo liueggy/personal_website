@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主题管理 - LiuEggy Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 32px; margin-bottom: 30px; color: #333; }
+        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .theme-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; border: 3px solid transparent; }
+        .theme-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+        .theme-card.active { border-color: #4a9eff; box-shadow: 0 8px 20px rgba(74,158,255,0.3); }
+        .theme-preview { width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600; }
+        .theme-info { padding: 20px; }
+        .theme-name { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .theme-desc { font-size: 14px; color: #666; line-height: 1.6; }
+        .theme-badge { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); color: #4a9eff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .btn { display: inline-block; padding: 12px 24px; background: #4a9eff; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; text-decoration: none; transition: all 0.3s; }
+        .btn:hover { background: #3a8eef; transform: translateY(-2px); }
+        .actions { margin-top: 30px; text-align: center; }
+        .message { padding: 16px; background: #e8f5e9; color: #2e7d32; border-radius: 8px; margin-bottom: 20px; display: none; }
+        .message.error { background: #ffebee; color: #c62828; }
+        .loading { text-align: center; padding: 60px 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 首页主题管理</h1>
+        <div id="message" class="message"></div>
+        <div id="themeGrid" class="theme-grid">
+            <div class="loading">加载主题列表...</div>
+        </div>
+        <div class="actions">
+            <a href="/admin/" class="btn">返回后台首页</a>
+            <a href="/" class="btn" style="background:#764ba2;margin-left:12px;">预览首页</a>
+        </div>
+    </div>
+
+    <script>
+        let currentTheme = '';
+        const themes = {
+            terminal: { name: '命令行终端', desc: '极客风格的终端界面，模拟命令行操作', preview: '$ whoami' },
+            minimal: { name: '简约大字', desc: '超大字体展示，简洁有力的视觉冲击', preview: 'LiuEggy' },
+            gradient: { name: '渐变卡片', desc: '现代感渐变色卡片，动态展示信息', preview: '✨ 卡片' },
+            typewriter: { name: '打字机效果', desc: '动态打字展示，循环切换身份标签', preview: '> _' },
+            classic: { name: '经典布局', desc: '传统友好的介绍方式，带时钟和标签', preview: '⏰ Hi' }
+        };
+
+        async function loadCurrentTheme() {
+            try {
+                const res = await fetch('/api/theme.php?action=get');
+                const data = await res.json();
+                if (data.code === 200) {
+                    currentTheme = data.data.current_theme || 'classic';
+                    renderThemes();
+                }
+            } catch (error) {
+                showMessage('加载失败: ' + error.message, 'error');
+            }
+        }
+
+        function renderThemes() {
+            const grid = document.getElementById('themeGrid');
+            grid.innerHTML = Object.keys(themes).map(key => `
+                <div class="theme-card ${key === currentTheme ? 'active' : ''}" onclick="selectTheme('${key}')">
+                    <div class="theme-preview">
+                        ${themes[key].preview}
+                        ${key === currentTheme ? '<span class="theme-badge">当前</span>' : ''}
+                    </div>
+                    <div class="theme-info">
+                        <div class="theme-name">${themes[key].name}</div>
+                        <div class="theme-desc">${themes[key].desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function selectTheme(themeName) {
+            if (themeName === currentTheme) {
+                showMessage('已经是当前主题了');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'set');
+                formData.append('theme', themeName);
+
+                const res = await fetch('/api/theme.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.code === 200) {
+                    currentTheme = themeName;
+                    renderThemes();
+                    showMessage(`已切换到「${themes[themeName].name}」主题！刷新首页查看效果`);
+                } else {
+                    showMessage(data.message || '切换失败', 'error');
+                }
+            } catch (error) {
+                showMessage('切换失败: ' + error.message, 'error');
+            }
+        }
+
+        function showMessage(text, type = 'success') {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + (type === 'error' ? 'error' : '');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+
+        loadCurrentTheme();
+    </script>
+</body>
+</html>
