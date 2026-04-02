@@ -130,6 +130,44 @@ export function ContentManager({ kind, items }: ContentManagerProps) {
     }
   }
 
+  async function remove() {
+    if (!form.id) {
+      return;
+    }
+
+    const label = String(form.title ?? "").trim() || "该内容";
+    const confirmed = window.confirm(`确定删除“${label}”吗？此操作不可恢复。`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setPending(true);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/${kind}/${form.id}`, {
+        method: "DELETE"
+      });
+
+      const raw = await response.text();
+      const result = raw ? JSON.parse(raw) : {};
+
+      if (!response.ok) {
+        setError(result.error || "删除失败");
+        return;
+      }
+
+      setMessage("删除成功，页面即将刷新。");
+      window.location.reload();
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "删除失败，请稍后重试");
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <div className="admin-grid">
       <section className="panel">
@@ -153,9 +191,16 @@ export function ContentManager({ kind, items }: ContentManagerProps) {
       <section className="panel">
         <div className="panel-header">
           <h2>{kind === "posts" ? "文章编辑器" : "项目编辑器"}</h2>
-          <button type="button" className="button-primary" onClick={save} disabled={pending}>
-            {pending ? "保存中..." : "保存"}
-          </button>
+          <div className="inline-actions">
+            {form.id ? (
+              <button type="button" className="button-secondary" onClick={remove} disabled={pending}>
+                {pending ? "处理中..." : "删除"}
+              </button>
+            ) : null}
+            <button type="button" className="button-primary" onClick={save} disabled={pending}>
+              {pending ? "保存中..." : "保存"}
+            </button>
+          </div>
         </div>
         <div className="stack-form">
           <label>

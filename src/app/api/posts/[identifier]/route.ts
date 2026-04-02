@@ -62,3 +62,29 @@ export async function PUT(request: Request, context: RouteContext) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
+
+export async function DELETE(_request: Request, context: RouteContext) {
+  try {
+    await requireAdminApiUser();
+    const { identifier } = await context.params;
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase.from("posts").delete().eq("id", identifier).select("*").single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    revalidatePath("/");
+    revalidatePath("/blog");
+    revalidatePath(`/blog/${data.slug}`);
+    revalidatePath("/admin/posts");
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    if (error instanceof Error && (error.message === "UNAUTHORIZED" || error.message === "FORBIDDEN")) {
+      return NextResponse.json({ error: error.message }, { status: error.message === "UNAUTHORIZED" ? 401 : 403 });
+    }
+    const message = error instanceof Error ? error.message : "Delete failed";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
