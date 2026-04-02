@@ -1,17 +1,25 @@
 (function () {
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
   const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
-  const api = (window.__SITE__ && window.__SITE__.api) || '/comments_db.php';
+  const api = (window.__SITE__ && window.__SITE__.api) || '/api/guestbook';
 
-  // 注册 Service Worker 以实现资源缓存
+  // 旧的 Service Worker 会缓存带重定向的页面响应，导致 about/guestbook 导航报错。
+  // 这里直接卸载旧 SW，避免继续拦截文档请求。
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('✅ Service Worker 注册成功:', registration.scope);
+      navigator.serviceWorker.getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+        .then(() => {
+          if ('caches' in window) {
+            return caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key))));
+          }
+          return null;
         })
-        .catch(error => {
-          console.log('❌ Service Worker 注册失败:', error);
+        .then(() => {
+          console.log('🧹 已清理旧 Service Worker 与缓存');
+        })
+        .catch((error) => {
+          console.log('清理 Service Worker 失败:', error);
         });
     });
   }
@@ -172,6 +180,9 @@
   const loadingEl = $('#comment-loading');
   const emptyEl = $('#comment-empty');
   const commentsCount = $('#comments-count');
+  const captchaQuestion = $('#captcha-question');
+  const captchaToken = $('#captcha-token');
+  const captchaRefreshBtn = $('#captcha-refresh');
 
   function esc(s) {
     return (s || '').toString().replace(/[&<>"]|'/g, c => ({
@@ -269,6 +280,18 @@
     return fetchJSON(api, { method: 'POST', body: JSON.stringify(payload) });
   }
 
+  async function loadChallenge() {
+    if (!captchaQuestion || !captchaToken) return;
+    try {
+      const data = await fetchJSON(`${api}?action=challenge&_=${Date.now()}`);
+      captchaQuestion.textContent = `请完成计算: ${data.challenge.prompt}`;
+      captchaToken.value = data.challenge.token;
+    } catch (err) {
+      captchaQuestion.textContent = '验证题加载失败，请稍后刷新重试';
+      captchaToken.value = '';
+    }
+  }
+
   listEl && listEl.addEventListener('click', async (e) => {
     // 点赞
     const likeBtn = e.target.closest('.like');
@@ -328,12 +351,14 @@
     const contact = $('#contact').value.trim();
     const content = $('#content').value.trim();
     const captcha = $('#captcha').value.trim();
+    const challengeToken = captchaToken ? captchaToken.value.trim() : '';
     const agree = $('#agree').checked;
 
     if (!agree) return (tip.textContent = '请先勾选同意展示留言');
     if (name.length < 1) return (tip.textContent = '请填写称呼');
     if (content.length < 1 || content.length > 500) return (tip.textContent = '留言长度应为 1~500 字');
-    if (captcha.length !== 4) return (tip.textContent = '请输入4位验证码');
+    if (!captcha) return (tip.textContent = '请输入验证答案');
+    if (!challengeToken) return (tip.textContent = '验证题尚未加载完成，请刷新题目');
 
     const btn = form.querySelector('button[type="submit"]');
     const btnText = btn.querySelector('.btn-text');
@@ -344,7 +369,14 @@
     if (btnLoader) btnLoader.style.display = 'inline';
     
     try {
-      const payload = { action: 'create', name, contact, content, captcha };
+      const payload = {
+        action: 'create',
+        name,
+        contact,
+        content,
+        challenge_answer: captcha,
+        challenge_token: challengeToken
+      };
       
       // 如果是回复
       if (replyingTo) {
@@ -355,9 +387,7 @@
       await submitComment(payload);
       $('#content').value = '';
       $('#captcha').value = '';
-      // 刷新验证码
-      const captchaImg = $('#captcha-img');
-      if (captchaImg) captchaImg.src = '/captcha.php?' + Date.now();
+      await loadChallenge();
       
       cancelReply();
       await loadComments();
@@ -367,9 +397,7 @@
     } catch (err) {
       tip.style.color = '#ef4444';
       tip.textContent = err.message || '提交失败，请稍后重试';
-      // 刷新验证码
-      const captchaImg = $('#captcha-img');
-      if (captchaImg) captchaImg.src = '/captcha.php?' + Date.now();
+      await loadChallenge();
     } finally {
       btn.disabled = false;
       if (btnText) btnText.style.display = 'inline';
@@ -378,4 +406,6 @@
   });
 
   loadComments();
+  loadChallenge();
+  captchaRefreshBtn && captchaRefreshBtn.addEventListener('click', loadChallenge);
 })();

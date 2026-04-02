@@ -58,8 +58,8 @@ const heroThemes = {
                 Hi there
             </div>
             <div class="hero-actions" style="justify-content: center; margin-top: 40px;">
-                <a href="/guestbook.html" class="btn btn-primary">留言交流</a>
-                <a href="/about.html" class="btn btn-secondary">了解更多</a>
+                <a href="/guestbook" class="btn btn-primary">留言交流</a>
+                <a href="/about" class="btn btn-secondary">了解更多</a>
             </div>
         `;
         },
@@ -161,8 +161,8 @@ const heroThemes = {
                 <p class="minimal-skills">${skills}</p>
                 <p class="minimal-school">${school}</p>
                 <div class="hero-actions" style="justify-content: center; margin-top: 50px;">
-                    <a href="/guestbook.html" class="btn btn-primary">留言交流</a>
-                    <a href="/about.html" class="btn btn-secondary">了解更多</a>
+                    <a href="/guestbook" class="btn btn-primary">留言交流</a>
+                    <a href="/about" class="btn btn-secondary">了解更多</a>
                 </div>
             </div>
         `;
@@ -213,8 +213,8 @@ const heroThemes = {
                     `).join('')}
                 </div>
                 <div class="hero-actions" style="justify-content: center; margin-top: 40px;">
-                    <a href="/guestbook.html" class="btn btn-primary">留言交流</a>
-                    <a href="/about.html" class="btn btn-secondary">了解更多</a>
+                    <a href="/guestbook" class="btn btn-primary">留言交流</a>
+                    <a href="/about" class="btn btn-secondary">了解更多</a>
                 </div>
             </div>
         `;
@@ -384,8 +384,8 @@ const heroThemes = {
                 </div>
                 <p class="typewriter-subtitle">${name} · ${school}</p>
                 <div class="hero-actions" style="justify-content: center; margin-top: 50px;">
-                    <a href="/guestbook.html" class="btn btn-primary">留言交流</a>
-                    <a href="/about.html" class="btn btn-secondary">了解更多</a>
+                    <a href="/guestbook" class="btn btn-primary">留言交流</a>
+                    <a href="/about" class="btn btn-secondary">了解更多</a>
                 </div>
             </div>
         `;
@@ -500,8 +500,8 @@ const heroThemes = {
                 ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
             </div>
             <div class="hero-actions" style="justify-content: center;">
-                <a href="/guestbook.html" class="btn btn-primary">留言交流</a>
-                <a href="/about.html" class="btn btn-secondary">了解更多</a>
+                    <a href="/guestbook" class="btn btn-primary">留言交流</a>
+                    <a href="/about" class="btn btn-secondary">了解更多</a>
             </div>
         `;
         },
@@ -555,7 +555,7 @@ const heroThemes = {
 // 加载当前主题
 async function loadHeroTheme() {
     try {
-        const response = await fetch('/api/theme.php?action=get');
+        const response = await fetch('/api/theme?action=get');
         const data = await response.json();
         
         if (data.code === 200) {

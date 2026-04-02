@@ -260,12 +260,7 @@
 
         // 页面加载时初始化
         window.addEventListener('DOMContentLoaded', async () => {
-            // 1. 先设置 Session (调用后端接口) - 非阻塞
-            fetch('/admin/set_session.php', { credentials: 'same-origin' }).catch(e => {
-                console.log('设置 session 失败:', e);
-            });
-            
-            // 2. 确保有admin token (从父窗口或本地存储获取)
+            // 确保有 admin token (从父窗口或本地存储获取)
             if (!localStorage.getItem('admin_token')) {
                 // 尝试从父窗口获取(如果在iframe中)
                 try {
@@ -278,21 +273,21 @@
                 } catch (e) {
                     console.log('无法访问父窗口localStorage');
                 }
-                
-                // 如果还是没有,设置默认token
-                if (!localStorage.getItem('admin_token')) {
-                    localStorage.setItem('admin_token', 'liueggy_admin_2024');
-                }
+            }
+
+            if (!localStorage.getItem('admin_token')) {
+                location.href = '/admin';
+                return;
             }
             
-            // 3. 并行加载关键数据
+            // 并行加载关键数据
             await Promise.all([
                 loadCategories(),
                 loadStats(),
                 loadPosts()
             ]);
             
-            // 4. 延迟初始化编辑器功能 (非关键)
+            // 延迟初始化编辑器功能 (非关键)
             requestIdleCallback(() => {
                 initEditorFeatures();
             }, { timeout: 2000 });
@@ -520,7 +515,7 @@
         // 加载统计数据
         async function loadStats() {
             try {
-                const response = await fetch('/blog_api.php?action=stats', {
+                const response = await fetch('/blog/api?action=stats', {
                     headers: { 'Authorization': 'Bearer ' + localStorage.getItem('admin_token') }
                 });
                 const result = await response.json();
@@ -539,7 +534,7 @@
         // 加载分类列表
         async function loadCategories() {
             try {
-                const response = await fetch('/blog_api.php?action=categories');
+                const response = await fetch('/blog/api?action=categories');
                 const result = await response.json();
 
                 if (result.success) {
@@ -571,11 +566,12 @@
             postList.innerHTML = '<div class="loading">加载中...</div>';
 
             try {
-                let url = `/blog_api.php?action=list&page=${page}&limit=20`;
-                if (currentFilter.status) url += `&status=${currentFilter.status}`;
+                let url = `/blog/api?action=list&page=${page}&limit=20&status=${currentFilter.status || 'all'}`;
                 if (currentFilter.category) url += `&category=${currentFilter.category}`;
 
-                const response = await fetch(url);
+                const response = await fetch(url, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('admin_token') }
+                });
                 const result = await response.json();
 
                 if (result.success) {
@@ -631,7 +627,7 @@
                     ${post.summary ? `<div class="post-summary">${escapeHtml(post.summary)}</div>` : ''}
                     ${tags ? `<div class="post-tags">${tags}</div>` : ''}
                     <div class="post-actions">
-                        ${post.status === 'published' ? `<a href="/blog/${post.slug}" target="_blank" class="btn btn-small btn-secondary">查看</a>` : ''}
+                        ${post.status === 'published' ? `<a href="/blog/article/${post.slug}" target="_blank" class="btn btn-small btn-secondary">查看</a>` : ''}
                         <button class="btn btn-small btn-primary" onclick="editPost('${post.id}')">编辑</button>
                         <button class="btn btn-small btn-danger" onclick="deletePost('${post.id}', '${escapeHtml(post.title)}')">删除</button>
                     </div>
@@ -692,7 +688,9 @@
         // 加载文章数据
         async function loadPostData(id) {
             try {
-                const response = await fetch(`/blog_api.php?action=detail&id=${id}`);
+                const response = await fetch(`/blog/api?action=detail&id=${id}`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('admin_token') }
+                });
                 const result = await response.json();
 
                 if (result.success) {
@@ -745,11 +743,11 @@
             try {
                 let url, method;
                 if (id) {
-                    url = '/blog_api.php?action=update';
+                    url = '/blog/api?action=update';
                     method = 'PUT';
                     data.id = id;
                 } else {
-                    url = '/blog_api.php?action=create';
+                    url = '/blog/api?action=create';
                     method = 'POST';
                 }
 
@@ -797,7 +795,7 @@
             }
 
             try {
-                const response = await fetch('/blog_api.php?action=delete', {
+                const response = await fetch('/blog/api?action=delete', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',

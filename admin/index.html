@@ -404,7 +404,7 @@
             const errorEl = document.getElementById('loginError');
             
             try {
-                const res = await fetch('/admin/api.php', {
+                const res = await fetch('/admin/api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'login', username, password })
@@ -426,7 +426,7 @@
         
         async function checkAuth() {
             try {
-                const res = await fetch('/admin/api.php?action=stats&type=contact', {
+                const res = await fetch('/admin/api?action=stats&type=contact', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -468,7 +468,7 @@
         
         async function loadStats(type) {
             try {
-                const res = await fetch(`/admin/api.php?action=stats&type=${type}`, {
+                const res = await fetch(`/admin/api?action=stats&type=${type}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
@@ -487,7 +487,7 @@
         
         async function loadList(type, filter) {
             try {
-                const res = await fetch(`/admin/api.php?action=list&type=${type}&filter=${filter}`, {
+                const res = await fetch(`/admin/api?action=list&type=${type}&filter=${filter}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
@@ -538,7 +538,7 @@
         async function toggleStatus(type, id, currentStatus) {
             if (!confirm('确定要' + (currentStatus == 1 ? '隐藏' : '发布') + '这条' + (type === 'blog' ? '评论' : '留言') + '吗?')) return;
             try {
-                const res = await fetch('/admin/api.php', {
+                const res = await fetch('/admin/api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ action: 'toggle', type: type, id: id, status: currentStatus == 1 ? 0 : 1 })
@@ -552,7 +552,7 @@
         async function deleteItem(type, id) {
             if (!confirm('确定要删除这条' + (type === 'blog' ? '评论' : '留言') + '吗？此操作不可恢复！')) return;
             try {
-                const res = await fetch('/admin/api.php', {
+                const res = await fetch('/admin/api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ action: 'delete', type: type, id: id })
@@ -587,7 +587,7 @@
             if (!grid) return;
             grid.innerHTML = '<div class="empty-state">加载中...</div>';
             try {
-                const res = await fetch('/api/theme.php?action=get', { cache: 'no-store' });
+                const res = await fetch('/api/theme?action=get', { cache: 'no-store' });
                 const text = await res.text();
                 let data;
                 try { data = JSON.parse(text); } catch (e) {
@@ -638,9 +638,12 @@
         async function switchTheme(key) {
             setThemeAlert('', '');
             try {
-                const res = await fetch('/api/theme.php', {
+                const res = await fetch('/api/theme?action=set', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: new URLSearchParams({ action: 'set', theme: key }).toString()
                 });
                 const text = await res.text();
@@ -692,7 +695,7 @@
             formEl.innerHTML = '<div class="empty-state">加载中...</div>';
             
             try {
-                const res = await fetch('/api/theme.php?action=get', { cache: 'no-store' });
+                const res = await fetch('/api/theme?action=get', { cache: 'no-store' });
                 const data = await res.json();
                 
                 if (data.code !== 200 || !data.data) {
@@ -1016,9 +1019,12 @@
             try {
                 currentThemeData.themes[currentConfigTheme].config = config;
                 
-                const res = await fetch('/api/theme.php', {
+                const res = await fetch('/api/theme?action=update_config', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({
                         action: 'update_config',
                         theme: currentConfigTheme,

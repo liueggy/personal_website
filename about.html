@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/style.css?v=16">
-    <link rel="canonical" href="https://liueggy.live/about.html" />
+    <link rel="canonical" href="https://www.liueggy.live/about" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%234a9eff'/><ellipse cx='50' cy='55' rx='30' ry='35' fill='white'/></svg>">
     <style>
         /* 统计项简约样式 */
@@ -49,9 +49,9 @@
             </div>
             <nav class="main-nav">
                 <a href="/" class="nav-link">首页</a>
-                <a href="/about.html" class="nav-link active">关于</a>
+                <a href="/about" class="nav-link active">关于</a>
                 <a href="/blog" class="nav-link">博客</a>
-                <a href="/guestbook.html" class="nav-link">留言</a>
+                <a href="/guestbook" class="nav-link">留言</a>
                 <button id="theme-toggle" class="icon-btn" aria-label="切换主题">
                     <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -161,7 +161,7 @@
                                 </svg>
                             </div>
                             <h4 style="font-size:16px;font-weight:600;margin-bottom:8px;color:var(--text-primary);">留言板</h4>
-                            <a href="/guestbook.html" style="color:var(--text-secondary);text-decoration:none;font-size:14px;">在线留言交流</a>
+                        <a href="/guestbook" style="color:var(--text-secondary);text-decoration:none;font-size:14px;">在线留言交流</a>
                         </div>
                     </div>
 
@@ -200,7 +200,7 @@
                             </svg>
                             发送邮件
                         </a>
-                        <a href="/guestbook.html" class="btn btn-secondary" style="text-decoration:none;">
+                    <a href="/guestbook" class="btn btn-secondary" style="text-decoration:none;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                             </svg>
@@ -287,7 +287,7 @@
             
             // 2. 访问量/访客统计（服务端真实统计）
             try {
-                const r = await fetch('/api/stats.php?action=track', { cache: 'no-cache', credentials: 'same-origin' });
+                const r = await fetch('/api/stats?action=track', { cache: 'no-cache', credentials: 'same-origin' });
                 if (r.ok) {
                     const json = await r.json();
                     if (json && json.code === 200 && json.data) {
@@ -305,7 +305,7 @@
             
             // 3. 从数据库获取博客统计数据
             try {
-                const response = await fetch('/blog/api.php?action=stats');
+                const response = await fetch('/blog/api?action=stats');
                 if (response.ok) {
                     const result = await response.json();
                     if (result.code === 200 && result.data) {

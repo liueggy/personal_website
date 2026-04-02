@@ -43,6 +43,8 @@ backup/
 # 敏感文件
 qrcodes/
 *.pass
+.env*
+!.env.example
 
 # PHP
 vendor/
@@ -51,8 +53,10 @@ composer.lock
 # Node.js (如果有)
 node_modules/
 package-lock.json
+.next/
 
 # 数据库
 *.sql
 *.sqlite
 *.db
+.vercel

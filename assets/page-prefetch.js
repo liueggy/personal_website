@@ -99,9 +99,9 @@
         if ('requestIdleCallback' in window) {
             requestIdleCallback(() => {
                 const highPriorityPages = [
-                    '/about.html',
+  '/about',
                     '/blog',
-                    '/guestbook.html'
+  '/guestbook'
                 ];
                 
                 highPriorityPages.forEach((url, index) => {

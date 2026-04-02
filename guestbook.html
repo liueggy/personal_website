@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/style.css?v=16">
-    <link rel="canonical" href="https://liueggy.live/guestbook.html" />
+    <link rel="canonical" href="https://www.liueggy.live/guestbook" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%234a9eff'/><ellipse cx='50' cy='55' rx='30' ry='35' fill='white'/></svg>">
 </head>
 <body>
@@ -40,9 +40,9 @@
             </div>
             <nav class="main-nav">
                 <a href="/" class="nav-link">首页</a>
-                <a href="/about.html" class="nav-link">关于</a>
+                <a href="/about" class="nav-link">关于</a>
                 <a href="/blog" class="nav-link">博客</a>
-                <a href="/guestbook.html" class="nav-link active">留言</a>
+                <a href="/guestbook" class="nav-link active">留言</a>
                 <button id="theme-toggle" class="icon-btn" aria-label="切换主题">
                     <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -115,28 +115,28 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="captcha">验证码 *</label>
-                                <div style="display:flex;gap:12px;align-items:center;">
+                                <label for="captcha">人机验证 *</label>
+                                <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                                     <input 
                                         type="text" 
                                         name="captcha" 
                                         id="captcha" 
-                                        placeholder="请输入验证码" 
+                                        placeholder="请输入答案" 
                                         required 
-                                        maxlength="4" 
+                                        maxlength="8" 
                                         class="form-input"
-                                        style="flex:1;"
+                                        style="flex:1;min-width:140px;"
                                         autocomplete="off"
                                     />
-                                    <img 
-                                        id="captcha-img" 
-                                        src="/captcha.php" 
-                                        alt="验证码" 
-                                        style="height:40px;border-radius:6px;cursor:pointer;border:1px solid var(--border);"
-                                        onclick="this.src='/captcha.php?'+Date.now()"
-                                        title="点击刷新"
-                                    />
+                                    <button
+                                        type="button"
+                                        id="captcha-refresh"
+                                        class="btn"
+                                        style="width:auto;padding:10px 16px;"
+                                    >刷新题目</button>
                                 </div>
+                                <p id="captcha-question" style="margin-top:8px;color:var(--text-secondary);font-size:14px;">加载验证题中...</p>
+                                <input type="hidden" id="captcha-token" />
                             </div>
                             <div class="form-footer">
                                 <label class="checkbox-label">
@@ -242,7 +242,7 @@
         </div>
     </div>
 
-    <script>window.__SITE__={api:'/comments_db.php'};</script>
+    <script>window.__SITE__={api:'/api/guestbook'};</script>
     <script src="/assets/app.js?v=3" defer></script>
     <script src="/assets/reveal.js?v=1" defer></script>
 </body>
