@@ -4,6 +4,8 @@ config/database.php
 # 数据文件
 data/
 *.json
+!package.json
+!tsconfig.json
 !package-lock.json
 !vercel.json
 !data/.gitkeep
