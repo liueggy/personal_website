@@ -4,6 +4,8 @@ config/database.php
 # 数据文件
 data/
 *.json
+!package-lock.json
+!vercel.json
 !data/.gitkeep
 
 # 上传文件
@@ -52,7 +54,6 @@ composer.lock
 
 # Node.js (如果有)
 node_modules/
-package-lock.json
 .next/
 
 # 数据库
